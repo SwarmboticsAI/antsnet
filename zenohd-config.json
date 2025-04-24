@@ -1,0 +1,36 @@
+{
+  "mode": "peer",
+  "listen": {
+    "endpoints": ["tcp/0.0.0.0:7447"]
+  },
+  "connect": {
+    "endpoints": []
+  },
+  "plugins": {
+    "remote_api": {
+      "__required__": true,
+      "websocket_port": "0.0.0.0:10000",
+      "secure_websocket": null
+    }
+  },
+  "scouting": {
+    "multicast": {
+      "enabled": true
+    },
+    "gossip": {
+      "enabled": false
+    }
+  },
+  "routing": {
+    "router": {
+      "peers_failover_brokering": false
+    }
+  },
+  "adminspace": {
+    "enabled": true,
+    "permissions": {
+      "read": true,
+      "write": true
+    }
+  }
+}

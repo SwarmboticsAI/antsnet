@@ -1,0 +1,3 @@
+# Ignore proto-generated code
+# Ignore proto-generated files
+./src/protos/generated/
