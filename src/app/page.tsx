@@ -14,6 +14,7 @@ import { useGeoDrawing } from "@/providers/geo-drawing-provider";
 import { useMapContext } from "@/providers/map-provider";
 import { useProfile } from "@/providers/profile-provider";
 import { useRobots } from "@/providers/robot-provider";
+import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { useSessions } from "@/providers/session-provider";
 import { Robot } from "@/types/Robot";
 import { getBatteryIcon } from "@/utils/get-battery-icon";
@@ -30,7 +31,7 @@ export default function Home() {
   const { state, addPoint, resetDrawing, startDrawing } = useGeoDrawing();
   const geoDrawLayer = useGeoDrawLayer();
   const activeBehaviorLayers = useBehaviorLayers();
-
+  const { clearSelection, toggleRobotSelection } = useRobotSelection();
   const {
     hasActiveSession,
     terminateSession,
@@ -56,11 +57,14 @@ export default function Home() {
       await terminateMultipleSessions(
         robots.map((robot: Robot) => robot.robotId)
       );
+      clearSelection();
       return;
     }
     // Request sessions for all robots
     const result = await requestMultipleSessions(
-      robots.map((robot: Robot) => robot.robotId)
+      robots
+        .filter((r: Robot) => !hasActiveSession(r.robotId))
+        .map((robot: Robot) => robot.robotId)
     );
     console.log("Start results:", result);
   };
@@ -70,6 +74,7 @@ export default function Home() {
       e.stopPropagation();
       if (hasActiveSession(robot.robotId)) {
         await terminateSession(robot.robotId);
+        toggleRobotSelection(robot.robotId);
       } else {
         await requestSession(robot.robotId, takId);
       }
