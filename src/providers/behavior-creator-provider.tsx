@@ -45,7 +45,7 @@ export const paramFieldsMap = {
       name: "rallyRadiusM",
       label: "Rally Radius (m)",
       type: "number",
-      default: 3,
+      default: 5,
     },
   ],
   [Behavior.BEHAVIOR_DEFEND]: [
@@ -53,7 +53,7 @@ export const paramFieldsMap = {
       name: "defendRadiusM",
       label: "Defend Radius (m)",
       type: "number",
-      default: 3,
+      default: 5,
     },
   ],
   [Behavior.BEHAVIOR_SURROUND]: [
@@ -61,7 +61,7 @@ export const paramFieldsMap = {
       name: "surroundRadiusM",
       label: "Surround Radius (m)",
       type: "number",
-      default: 3,
+      default: 5,
     },
   ],
   [Behavior.BEHAVIOR_MULTI_WAYPOINT_NAVIGATION]: [
@@ -97,13 +97,13 @@ export const paramFieldsMap = {
       name: "outerRadiusM",
       label: "Outer Radius (m)",
       type: "number",
-      default: 5,
+      default: 7,
     },
     {
       name: "innerRadiusM",
       label: "Inner Radius (m)",
       type: "number",
-      default: 2,
+      default: 5,
     },
   ],
   [Behavior.BEHAVIOR_AREA_COVERAGE]: [
@@ -111,7 +111,7 @@ export const paramFieldsMap = {
       name: "laneWidthM",
       label: "Lane Width (m)",
       type: "number",
-      default: 2,
+      default: 3,
     },
   ],
   [Behavior.BEHAVIOR_PATROL]: [],
