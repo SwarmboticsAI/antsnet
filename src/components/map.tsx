@@ -64,8 +64,7 @@ export function RobotMap({
   const { isBoxSelecting, isCtrlPressed } = useBoxSelection(robots);
 
   // Use the behavior creator context and direct behavior provider
-  const { state, dispatch, behaviors, createBehavior, checkRobotConflicts } =
-    useBehaviorCreator();
+  const { state, dispatch, checkRobotConflicts } = useBehaviorCreator();
   const { requestBehavior } = useBehaviors();
   const iconMarkersRef = useRef<maplibregl.Marker[]>([]);
   const labelMarkersRef = useRef<maplibregl.Marker[]>([]);

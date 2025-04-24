@@ -4,10 +4,12 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Robot } from "@/types/Robot";
 import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { useMapContext } from "@/providers/map-provider";
+import { useSessions } from "@/providers/session-provider";
 
 export function useBoxSelection(robots: Robot[]) {
   const { deckRef } = useMapContext();
   const { selectedRobotIds, setSelectedRobotIds } = useRobotSelection();
+  const { hasActiveSession } = useSessions();
 
   // Selection state
   const [isSelecting, setIsSelecting] = useState(false);
@@ -181,7 +183,9 @@ export function useBoxSelection(robots: Robot[]) {
 
         // Add to selection
         if (robotsInBox.length > 0) {
-          const newIds = robotsInBox.map((r) => r.robotId);
+          const newIds = robotsInBox
+            .map((r) => r.robotId)
+            .filter((r) => hasActiveSession(r));
           const combinedSelection = new Set([...selectedRobotIds, ...newIds]);
           setSelectedRobotIds(Array.from(combinedSelection));
 

@@ -1,6 +1,9 @@
 "use client";
 export const dynamic = "force-dynamic";
 
+import { useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowDownToLine, Joystick, ParkingCircle, Target } from "lucide-react";
 import { BehaviorCreatorPanel } from "@/components/behavior-creator-panel";
 import { RobotMap } from "@/components/map";
 import { Sidebar } from "@/components/sidebar";
@@ -9,29 +12,27 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useBehaviorLayers } from "@/hooks/use-active-behavior-layer";
 import { useGeoDrawLayer } from "@/hooks/use-geo-draw-layer";
 import { useStandardLayers } from "@/hooks/use-standard-layers";
-import { cn } from "@/lib/utils";
 import { useGeoDrawing } from "@/providers/geo-drawing-provider";
 import { useMapContext } from "@/providers/map-provider";
 import { useProfile } from "@/providers/profile-provider";
 import { useRobots } from "@/providers/robot-provider";
 import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { useSessions } from "@/providers/session-provider";
-import { Robot } from "@/types/Robot";
 import { getBatteryIcon } from "@/utils/get-battery-icon";
-import { ArrowDownToLine, Joystick, ParkingCircle, Target } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { Robot } from "@/types/Robot";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
+  const { state, addPoint, resetDrawing, startDrawing } = useGeoDrawing();
+  const { clearSelection, toggleRobotSelection, selectedRobotIds } =
+    useRobotSelection();
   const { robotList: robots } = useRobots();
   const { profile } = useProfile();
-  const router = useRouter();
-  const standardLayers = useStandardLayers();
   const { flyToRobot } = useMapContext();
-  const { state, addPoint, resetDrawing, startDrawing } = useGeoDrawing();
+  const router = useRouter();
   const geoDrawLayer = useGeoDrawLayer();
+  const standardLayers = useStandardLayers();
   const activeBehaviorLayers = useBehaviorLayers();
-  const { clearSelection, toggleRobotSelection } = useRobotSelection();
   const {
     hasActiveSession,
     terminateSession,
@@ -74,7 +75,9 @@ export default function Home() {
       e.stopPropagation();
       if (hasActiveSession(robot.robotId)) {
         await terminateSession(robot.robotId);
-        toggleRobotSelection(robot.robotId);
+        if (selectedRobotIds.includes(robot.robotId)) {
+          toggleRobotSelection(robot.robotId);
+        }
       } else {
         await requestSession(robot.robotId, takId);
       }
@@ -208,7 +211,7 @@ export default function Home() {
         robots={robots}
         layers={[...standardLayers, ...geoDrawLayer, ...activeBehaviorLayers]}
         onDeckClick={(info) => {
-          if (state.mode === "drawing") {
+          if (state.mode === "drawing" && selectedRobotIds.length > 0) {
             if (info?.coordinate) {
               // Swap longitude/latitude to latitude/longitude
               const [longitude, latitude] = info.coordinate;
