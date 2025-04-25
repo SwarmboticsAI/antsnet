@@ -96,7 +96,7 @@ export default function RobotPage() {
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">Speed</TableCell>
-                        <TableCell>{robot.speed.toFixed(0)} m/s</TableCell>
+                        <TableCell>{robot.speed.toFixed(0)} mps</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">Battery</TableCell>

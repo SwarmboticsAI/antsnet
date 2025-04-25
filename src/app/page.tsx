@@ -3,7 +3,13 @@ export const dynamic = "force-dynamic";
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownToLine, Joystick, ParkingCircle, Target } from "lucide-react";
+import {
+  ArrowDownToLine,
+  Joystick,
+  Locate,
+  ParkingCircle,
+  Target,
+} from "lucide-react";
 import { BehaviorCreatorPanel } from "@/components/behavior-creator-panel";
 import { RobotMap } from "@/components/map";
 import { Sidebar } from "@/components/sidebar";
@@ -180,7 +186,7 @@ export default function Home() {
                         flyToRobot(robot);
                       }}
                     >
-                      <Target className="h-3 w-3" />
+                      <Locate className="h-3 w-3" />
                     </Button>
                     <Button
                       size="icon"

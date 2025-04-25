@@ -259,7 +259,7 @@ export default function RobotDetailsPage() {
                     </div>
                     <div className="border rounded-sm p-4">
                       <h4 className="text-xs font-semibold uppercase">Speed</h4>
-                      {robot?.speed.toFixed(0).toString()} m/s
+                      {robot?.speed.toFixed(0).toString()} mps
                     </div>
                     <div className="border rounded-sm p-4">
                       <h4 className="text-xs font-semibold uppercase">

@@ -18,7 +18,7 @@ const IframeStreamPlayer: React.FC<IframeStreamPlayerProps> = ({
   ipAddress,
   title = "Video Stream",
   allowFullscreen = true,
-  cameraFeedString = "camera/low",
+  cameraFeedString = "color/low",
   className = "",
   style = {},
 }) => {
