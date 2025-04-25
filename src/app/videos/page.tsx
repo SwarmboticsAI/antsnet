@@ -12,10 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Robot } from "@/types/Robot";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/sidebar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 export default function VideosPage() {
   const { robotList: robots } = useRobots();
   const [selectedRobots, setSelectedRobots] = useState<Set<string>>(new Set());
+  const [cameraFeed, setCameraFeed] = useState<string>("color/low");
 
   const handleToggle = (robotId: string) => {
     setSelectedRobots((prev) => {
@@ -72,8 +79,26 @@ export default function VideosPage() {
               ))}
             </div>
             <div className="flex gap-2">
+              <Select value={cameraFeed} onValueChange={setCameraFeed}>
+                <SelectTrigger className="w-48 mr-4" size="sm">
+                  <span className="text-sm">
+                    {cameraFeed === "color/low"
+                      ? "Main"
+                      : cameraFeed === "mono"
+                      ? "IR"
+                      : "Perception"}
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="color/low">Main</SelectItem>
+                  <SelectItem value="mono">IR</SelectItem>
+                  <SelectItem value="terrain/traversability">
+                    Perception
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                Select All
+                Select All Robots
               </Button>
               <Button variant="ghost" size="sm" onClick={handleClearAll}>
                 Clear All
@@ -121,7 +146,10 @@ export default function VideosPage() {
                       </Button>
                     </div>
                     <div className="aspect-video w-full">
-                      <VideoStreamPlayer ipAddress={robot.vpnIpAddress} />
+                      <VideoStreamPlayer
+                        ipAddress={robot.vpnIpAddress}
+                        cameraFeedString={cameraFeed}
+                      />
                     </div>
                   </div>
                 ))}

@@ -9,6 +9,7 @@ interface IframeStreamPlayerProps {
   ipAddress: string;
   title?: string;
   allowFullscreen?: boolean;
+  cameraFeedString?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -17,29 +18,26 @@ const IframeStreamPlayer: React.FC<IframeStreamPlayerProps> = ({
   ipAddress,
   title = "Video Stream",
   allowFullscreen = true,
+  cameraFeedString = "camera/low",
   className = "",
   style = {},
 }) => {
-  const [isIrFeed, setIsIrFeed] = useState(false);
   const [streamUrl, setStreamUrl] = useState(
-    `http://${ipAddress}:8889/color/low/`
+    `http://${ipAddress}:8889/${cameraFeedString}`
   );
 
   useEffect(() => {
-    if (isIrFeed) {
-      setStreamUrl(`http://${ipAddress}:8889/mono`);
-    } else {
-      setStreamUrl(`http://${ipAddress}:8889/color/low/`);
-    }
-  }, [isIrFeed, ipAddress]);
+    setStreamUrl(`http://${ipAddress}:8889/${cameraFeedString}`);
+  }, [ipAddress, cameraFeedString]);
 
   return (
     <div className={`w-full h-full ${className}`} style={{ ...style }}>
       <Toggle
         className="absolute top-2 right-2 z-10 bg-muted/50 hover:bg-muted"
-        pressed={isIrFeed}
+        pressed={streamUrl.includes("mono")}
         onPressedChange={(pressed) => {
-          setIsIrFeed(pressed);
+          const newFeed = pressed ? "mono" : "color/low";
+          setStreamUrl(`http://${ipAddress}:8889/${newFeed}`);
         }}
       >
         <Waves className="text-primary" />
