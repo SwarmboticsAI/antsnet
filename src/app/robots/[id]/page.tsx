@@ -88,13 +88,6 @@ export default function RobotDetailsPage() {
     return profile.takId;
   }, [profile]);
 
-  // Fly to robot when it changes
-  useEffect(() => {
-    if (robot?.robotId) {
-      flyToRobot(robot);
-    }
-  }, [robot?.robotId, flyToRobot]);
-
   // Determine robot status
   const robotStatus = useMemo(() => {
     const robotId = robot?.robotId ?? "";

@@ -21,85 +21,124 @@ export const useTeleopControls: UseTeleopControls = (
   maxThrottle = 1,
   maxSteering = 1
 ) => {
-  const [throttle, setThrottle] = useState(0);
-  const [steering, setSteering] = useState(0);
-
+  // Use refs for all state that affects rendering
   const throttleRef = useRef(0);
   const steeringRef = useRef(0);
   const keysPressed = useRef<Set<string>>(new Set());
-  const intervalRef = useRef<number | null>(null);
-  const isMoving = useRef(false);
+  const intervalId = useRef<number | null>(null);
+
+  // State for UI updates
+  const [throttle, setThrottle] = useState(0);
+  const [steering, setSteering] = useState(0);
 
   const resetControls = useCallback(() => {
     throttleRef.current = 0;
     steeringRef.current = 0;
     setThrottle(0);
     setSteering(0);
+
+    // Send a stop command when resetting
     sendCommand(0, 0);
-    isMoving.current = false;
   }, [sendCommand]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Prevent default behaviors for control keys
+      if (
+        [
+          "w",
+          "a",
+          "s",
+          "d",
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+        ].includes(event.key)
+      ) {
+        event.preventDefault();
+      }
+
       keysPressed.current.add(event.key);
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
       keysPressed.current.delete(event.key);
+
+      // If no movement keys are pressed, immediately send a stop command
+      if (
+        ![
+          "w",
+          "a",
+          "s",
+          "d",
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+        ].some((key) => keysPressed.current.has(key))
+      ) {
+        // Stop immediately on key release
+        throttleRef.current = 0;
+        steeringRef.current = 0;
+        sendCommand(0, 0);
+        setThrottle(0);
+        setSteering(0);
+      }
     };
 
     const updateControls = () => {
-      let newThrottle = 0;
-      let newSteering = 0;
+      let newThrottle = throttleRef.current;
+      let newSteering = steeringRef.current;
 
       const isShiftHeld = keysPressed.current.has("Shift");
+      const maxThrottleValue = isShiftHeld ? shiftThrottleCap : maxThrottle;
 
+      // Calculate new throttle with gradual steps up but immediate return to zero
       if (keysPressed.current.has("w") || keysPressed.current.has("ArrowUp")) {
-        newThrottle = Math.min(
-          throttleRef.current + stepSize,
-          isShiftHeld ? shiftThrottleCap : maxThrottle
-        );
+        newThrottle = Math.min(newThrottle + stepSize, maxThrottleValue);
       } else if (
         keysPressed.current.has("s") ||
         keysPressed.current.has("ArrowDown")
       ) {
-        newThrottle = Math.max(
-          throttleRef.current - stepSize,
-          isShiftHeld ? -shiftThrottleCap : -maxThrottle
-        );
+        newThrottle = Math.max(newThrottle - stepSize, -maxThrottleValue);
+      } else if (newThrottle !== 0) {
+        // Immediate return to zero
+        newThrottle = 0;
       }
 
+      // Calculate new steering with gradual steps up but immediate return to zero
       if (
         keysPressed.current.has("a") ||
         keysPressed.current.has("ArrowLeft")
       ) {
-        newSteering = Math.max(steeringRef.current - stepSize, -maxSteering);
+        newSteering = Math.max(newSteering - stepSize, -maxSteering);
       } else if (
         keysPressed.current.has("d") ||
         keysPressed.current.has("ArrowRight")
       ) {
-        newSteering = Math.min(steeringRef.current + stepSize, maxSteering);
+        newSteering = Math.min(newSteering + stepSize, maxSteering);
+      } else if (newSteering !== 0) {
+        // Immediate return to zero
+        newSteering = 0;
       }
 
-      const changed =
-        newThrottle !== throttleRef.current ||
-        newSteering !== steeringRef.current;
-
+      // Always update and send commands at the specified frequency
+      // This sacrifices some bandwidth but provides more consistent control
       throttleRef.current = newThrottle;
       steeringRef.current = newSteering;
       setThrottle(newThrottle);
       setSteering(newSteering);
-
-      if (newThrottle !== 0 || newSteering !== 0) {
-        sendCommand(newThrottle, newSteering);
-        isMoving.current = true;
-      } else if (changed && isMoving.current) {
-        sendCommand(0, 0); // Stop signal
-        isMoving.current = false;
-      }
+      sendCommand(newThrottle, newSteering);
     };
 
-    intervalRef.current = window.setInterval(updateControls, frequency);
+    // Use a higher frequency for more responsive controls
+    // This provides smoother control at the cost of more network traffic
+    const adjustedFrequency = Math.max(frequency, 20); // Minimum 20Hz for responsive control
+    intervalId.current = window.setInterval(
+      updateControls,
+      1000 / adjustedFrequency
+    );
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -107,15 +146,17 @@ export const useTeleopControls: UseTeleopControls = (
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalId.current) {
+        clearInterval(intervalId.current);
+      }
     };
   }, [
-    sendCommand,
     frequency,
     stepSize,
     shiftThrottleCap,
     maxThrottle,
     maxSteering,
+    sendCommand,
   ]);
 
   return {

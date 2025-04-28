@@ -173,7 +173,6 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
       handler: async (sample) => handleSessionEventSample(sample),
     });
 
-    // ✅ FIX: actually assign to the ref so it reflects the subscription
     subscribersRef.current[SESSION_EVENTS_ROUTE] = subscriber;
 
     return () => {
@@ -213,6 +212,47 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
     getNextSequence,
     keepaliveIntervalMs,
   ]);
+
+  // Add effect to handle browser refresh/close
+  useEffect(() => {
+    if (!isConnected || !session) return;
+
+    const handleBeforeUnload = () => {
+      // Synchronously terminate all active sessions on browser refresh/close
+      Object.values(state.sessions)
+        .filter((session) => session.status === SessionStatus.ACTIVE)
+        .forEach(({ robotId, token }) => {
+          if (!token) return;
+
+          try {
+            const req = SessionRequest.fromPartial({
+              requestType: SessionRequestType.SESSION_REQUEST_TYPE_TERMINATE,
+              takId,
+              robotId,
+              sessionToken: token,
+              sequenceNumber: getNextSequence(),
+            });
+            const encoded = SessionRequest.encode(req).finish();
+            // Use a synchronous method since this is in beforeunload
+            session.put(new KeyExpr(SESSION_REQUEST_ROUTE(robotId)), encoded);
+            console.log(`Terminated session for ${robotId} during page unload`);
+          } catch (err) {
+            console.error(`Failed to terminate session for ${robotId}`, err);
+          }
+        });
+    };
+
+    // Add event listener for beforeunload
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isConnected, session, state.sessions, takId, getNextSequence]);
+
+  useEffect(() => {
+    console.log(activeRobotIds, "are active");
+  }, [activeRobotIds]);
 
   const requestSession = useCallback(
     async (robotId: string, takId: string) => {

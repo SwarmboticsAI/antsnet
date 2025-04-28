@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navigation } from "@/components/navigation";
 import { ZenohWrapper } from "@/components/zenoh-wrapper";
+import { Toaster } from "@/components/sonner";
 import { MapProvider } from "@/providers/map-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { RobotProvider } from "@/providers/robot-provider";
@@ -16,12 +17,11 @@ import { QueryProvider } from "@/providers/query-provider";
 import { MissionDraftProvider } from "@/providers/mission-draft-provider";
 import { RobotAssignmentProvider } from "@/providers/robot-assignment-provider";
 import { MissionProvider } from "@/providers/mission-provider";
-
-import "./globals.css";
 import { RobotSelectionProvider } from "@/providers/robot-selection-provider";
 import { BehaviorCreatorProvider } from "@/providers/behavior-creator-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { ProfileSetupWrapper } from "@/components/profile-setup-wrapper";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,12 +55,12 @@ export default function RootLayout({
             disableTransitionOnChange
             enableSystem
           >
-            <RobotProvider>
-              <QueryProvider>
-                <ProfileProvider>
-                  <ProfileSetupWrapper>
-                    <SessionProvider>
-                      <RobotSelectionProvider>
+            <ProfileProvider>
+              <ProfileSetupWrapper>
+                <SessionProvider>
+                  <RobotSelectionProvider>
+                    <RobotProvider>
+                      <QueryProvider>
                         <BehaviorProvider>
                           <BehaviorStatusProvider>
                             <GeoDrawProvider>
@@ -74,6 +74,7 @@ export default function RootLayout({
                                             <BehaviorDrawingProvider>
                                               <Navigation />
                                               {children}
+                                              <Toaster />
                                             </BehaviorDrawingProvider>
                                           </MapFeatureProvider>
                                         </MapProvider>
@@ -85,12 +86,12 @@ export default function RootLayout({
                             </GeoDrawProvider>
                           </BehaviorStatusProvider>
                         </BehaviorProvider>
-                      </RobotSelectionProvider>
-                    </SessionProvider>
-                  </ProfileSetupWrapper>
-                </ProfileProvider>
-              </QueryProvider>
-            </RobotProvider>
+                      </QueryProvider>
+                    </RobotProvider>
+                  </RobotSelectionProvider>
+                </SessionProvider>
+              </ProfileSetupWrapper>
+            </ProfileProvider>
           </ThemeProvider>
         </ZenohWrapper>
       </body>

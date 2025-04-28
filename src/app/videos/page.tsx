@@ -21,7 +21,9 @@ import {
 
 export default function VideosPage() {
   const { robotList: robots } = useRobots();
-  const [selectedRobots, setSelectedRobots] = useState<Set<string>>(new Set());
+  const [selectedRobots, setSelectedRobots] = useState<Set<string>>(
+    new Set(robots.map((r: Robot) => r.robotId))
+  );
   const [cameraFeed, setCameraFeed] = useState<string>("color/low");
 
   const handleToggle = (robotId: string) => {

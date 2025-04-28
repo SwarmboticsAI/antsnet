@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import VideoStreamPlayer from "@/components/video-player";
@@ -10,45 +10,118 @@ import { useTeleopControls } from "@/hooks/use-teleop-controls";
 import { useRobots } from "@/providers/robot-provider";
 import { useTeleop } from "@/providers/teleop-provider";
 import { useSessions } from "@/providers/session-provider";
+import { useZenoh } from "@/providers/zenoh-provider";
 import { cn } from "@/lib/utils";
 import { getBatteryIcon } from "@/utils/get-battery-icon";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useProfile } from "@/providers/profile-provider";
 
 export default function TeleopPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { profile } = useProfile();
   const robotId = searchParams.get("robot_id");
   const { getRobotById } = useRobots();
-  const { getSessionInfo } = useSessions();
+  const { hasActiveSession, requestSession } = useSessions();
   const { startTeleop, stopTeleop, sendCommand, state } = useTeleop();
+  const { isConnected: isZenohConnected } = useZenoh();
   const [isInitializing, setIsInitializing] = useState(false);
+  const [showSessionAlert, setShowSessionAlert] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const sessionStartAttempted = useRef(false);
+
+  // Keep track of whether the component has been unmounted
+  const isUnmounted = useRef(false);
 
   const robot = useMemo(() => {
     if (!robotId) return null;
     return getRobotById(robotId);
   }, [robotId, getRobotById]);
 
-  const hasActiveSession = useMemo(() => {
-    if (!robotId) return false;
-    const sessionInfo = getSessionInfo(robotId);
-    return sessionInfo?.token !== null;
-  }, [robotId, getSessionInfo]);
+  // Create a teleop send command wrapper that prevents sending commands during exit
+  interface TeleopCommand {
+    throttle: number;
+    steering: number;
+  }
+
+  const sendTeleopCommand = (t: number, s: number): void => {
+    if (isExiting) {
+      // Don't send commands during exit process
+      return;
+    }
+
+    if (state === "active") {
+      sendCommand(t, s);
+    }
+  };
 
   const { throttle, steering, resetControls } = useTeleopControls(
-    50,
-    (t, s) => {
-      if (state === "active") {
-        sendCommand(t, s);
-      }
-    },
-    0.3
+    70,
+    sendTeleopCommand,
+    0.5
   );
 
+  // Separate effect for starting the session - now depends on Zenoh connection
   useEffect(() => {
-    if (!robotId || !hasActiveSession || isInitializing) return;
+    if (
+      !robotId ||
+      sessionStartAttempted.current ||
+      isStartingSession ||
+      !isZenohConnected
+    )
+      return;
 
-    let isMounted = true;
+    // Check if we need to start a session
+    if (!hasActiveSession(robotId)) {
+      // Auto-start the session
+      const startSession = async () => {
+        sessionStartAttempted.current = true;
+        setIsStartingSession(true);
+
+        try {
+          console.log("Auto-starting session for robot:", robotId);
+          await requestSession(robotId, profile?.takId ?? "default-tak-id");
+          console.log("Session started successfully");
+        } catch (error) {
+          console.error("Error auto-starting session:", error);
+          // If auto-start fails, show the dialog to let the user try manually
+          sessionStartAttempted.current = false; // Reset so we can try again
+          setShowSessionAlert(true);
+        } finally {
+          setIsStartingSession(false);
+        }
+      };
+
+      setTimeout(() => {
+        startSession();
+      }, 500);
+    }
+  }, [
+    robotId,
+    hasActiveSession,
+    requestSession,
+    profile?.takId,
+    isZenohConnected,
+    isExiting,
+  ]);
+
+  // Setup for teleop
+  useEffect(() => {
+    if (!robotId || !hasActiveSession(robotId) || isInitializing || isExiting)
+      return;
 
     const initTeleop = async () => {
+      if (isUnmounted.current) return;
       setIsInitializing(true);
 
       try {
@@ -56,30 +129,87 @@ export default function TeleopPage() {
       } catch (error) {
         console.error("Error starting teleop:", error);
       } finally {
-        if (isMounted) {
+        if (!isUnmounted.current) {
           setIsInitializing(false);
         }
       }
     };
 
     initTeleop();
+  }, [robotId, hasActiveSession, startTeleop, isExiting]);
 
+  // SINGLE cleanup useEffect with empty dependency array
+  // This ensures it ONLY runs on unmount, not on re-renders or dependency changes
+  useEffect(() => {
+    // Reference to keep track of cleanup state
+    const isExitingRef = { current: false };
+
+    // This return function ONLY runs on unmount
     return () => {
-      isMounted = false;
+      // Avoid running cleanup more than once
+      if (isExitingRef.current) return;
+      isExitingRef.current = true;
 
-      resetControls();
-      stopTeleop().catch(console.error);
+      console.log("Component unmounting, cleaning up teleop");
+      isUnmounted.current = true;
+
+      // First, do a proper stop - send a zero command to stop the robot
+      if (state === "active") {
+        console.log("Sending final stop command");
+        sendCommand(0, 0);
+      }
+
+      // Then wait a moment to ensure the command is processed
+      setTimeout(() => {
+        // Now do a clean shutdown of teleop
+        resetControls();
+
+        if (robotId) {
+          console.log("Stopping teleop session");
+          stopTeleop().catch((error) => {
+            console.error("Error stopping teleop during cleanup:", error);
+          });
+        }
+      }, 100);
     };
-  }, [robotId, hasActiveSession]);
+  }, []); // Empty dependency array means this only runs on mount/unmount
 
   const isConnected = state === "active";
   const isConnecting = state === "requesting" || isInitializing;
 
+  // Set up a proper exit sequence
   const handleExit = () => {
+    setIsExiting(true);
+
+    // First, stop the robot movement
     resetControls();
-    stopTeleop().finally(() => {
-      router.back();
-    });
+
+    // Send an explicit stop command
+    if (state === "active") {
+      sendCommand(0, 0);
+    }
+
+    // Wait briefly to ensure stop command is processed
+    setTimeout(() => {
+      // Then stop teleop
+      stopTeleop().finally(() => {
+        // Finally navigate away
+        router.back();
+      });
+    }, 100);
+  };
+
+  const handleStartSession = async () => {
+    if (!robotId) return;
+
+    setIsStartingSession(true);
+    try {
+      await requestSession(robotId, profile?.takId ?? "default-tak-id");
+    } catch (error) {
+      console.error("Error starting session:", error);
+    } finally {
+      setIsStartingSession(false);
+    }
   };
 
   return (
@@ -128,17 +258,46 @@ export default function TeleopPage() {
           </div>
         </div>
 
-        <div className="absolute top-22 right-0 w-64 h-64 rounded-tl-4xl rounded-bl-4xl overflow-hidden opacity-65 pointer-events-none">
+        {/* <div className="absolute top-22 right-0 w-64 h-64 rounded-tl-4xl rounded-bl-4xl overflow-hidden opacity-65 pointer-events-none">
           <RobotMap robots={[]} />
-        </div>
+        </div> */}
 
         <Button
           className="absolute top-28 left-4 bg-red-500"
           variant="destructive"
           onClick={handleExit}
+          disabled={isExiting}
         >
-          Exit
+          {isExiting ? "Exiting..." : "Exit"}
         </Button>
+
+        {/* Session Alert Dialog - only shown if auto-start fails */}
+        <AlertDialog open={showSessionAlert} onOpenChange={setShowSessionAlert}>
+          <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Session Start Failed</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-300">
+                We couldn't automatically start a session for this robot. Would
+                you like to try again?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                className="bg-slate-800 text-white hover:bg-slate-700 border-slate-600"
+                onClick={() => router.back()}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-blue-600 hover:bg-blue-500"
+                onClick={handleStartSession}
+                disabled={isStartingSession}
+              >
+                {isStartingSession ? "Starting..." : "Try Again"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ import {
 import { Behavior } from "@/protos/generated/sbai_behavior_protos/behavior_request";
 import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { useBehaviors } from "@/providers/behavior-provider";
+import { useGeoDrawing } from "@/providers/geo-drawing-provider";
 import { useBoxSelection } from "@/hooks/use-box-selection"; // Import the new hook
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -52,6 +53,7 @@ export function RobotMap({
 }) {
   const router = useRouter();
   const { deckRef, mapRef, viewState, setViewState, flyTo } = useMapContext();
+  const { state: drawingState } = useGeoDrawing();
   const [clickedCoords, setClickedCoords] = useState<{
     lng: number;
     lat: number;
@@ -306,6 +308,9 @@ export function RobotMap({
             layers={[...(layers ?? []), robotHitboxLayer]}
             onClick={handleClick}
             onViewStateChange={handleViewStateChange}
+            getCursor={() =>
+              selectedRobotIds.length > 0 ? "crosshair" : "grab"
+            }
           >
             <Map
               ref={(el) => {

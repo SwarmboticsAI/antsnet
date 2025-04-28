@@ -3,13 +3,8 @@ export const dynamic = "force-dynamic";
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowDownToLine,
-  Joystick,
-  Locate,
-  ParkingCircle,
-  Target,
-} from "lucide-react";
+import { ArrowDownToLine, Joystick, Locate, ParkingCircle } from "lucide-react";
+
 import { BehaviorCreatorPanel } from "@/components/behavior-creator-panel";
 import { RobotMap } from "@/components/map";
 import { Sidebar } from "@/components/sidebar";
