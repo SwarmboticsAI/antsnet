@@ -92,6 +92,8 @@ export function BehaviorCreatorPanel() {
     }
   };
 
+  if (!activeRobots.length) return null;
+
   return (
     <aside className="fixed top-15 right-0 w-88 h-[calc(100vh-60px)] overflow-hidden bg-background border-l shadow-lg flex flex-col z-30">
       <div className="px-4 py-3 border-b">

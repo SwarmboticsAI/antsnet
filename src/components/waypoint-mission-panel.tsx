@@ -54,15 +54,14 @@ export function WaypointMissionPanel({
       const len = geoPoints.length;
       const from = turfPoint([geoPoints[len - 2][1], geoPoints[len - 2][0]]);
       const to = turfPoint([geoPoints[len - 1][1], geoPoints[len - 1][0]]);
-      const yaw = bearing(from, to);
-
-      console.log("geoPoints", geoPoints);
-      console.log("yaw", yaw);
+      const bearingValue = bearing(from, to);
+      const yawDegrees = (90 - bearingValue) % 360;
+      const finalYawDegrees = yawDegrees < 0 ? yawDegrees + 360 : yawDegrees;
 
       dispatch({
         type: "SET_PARAM",
         key: "desiredFinalYawDeg",
-        value: yaw ?? undefined,
+        value: finalYawDegrees ?? undefined,
       });
     } else {
       dispatch({

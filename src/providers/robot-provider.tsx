@@ -76,18 +76,10 @@ export const RobotProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      const { activeRobotIds, hasActiveSession, terminateSession } =
-        sessionsRef.current;
-
-      console.log("Interval executing, active robots:", activeRobotIds);
+      const { hasActiveSession, terminateSession } = sessionsRef.current;
 
       Object.entries(heartbeatTimesRef.current).forEach(([id, ts]) => {
         if (now - ts > STALE_THRESHOLD) {
-          console.log(
-            activeRobotIds,
-            "are active, checking for offline robots"
-          );
-
           const isActive = hasActiveSession(id);
           console.log(
             isActive
@@ -113,7 +105,7 @@ export const RobotProvider = ({ children }: { children: ReactNode }) => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []); // Empty dependency array so it only runs once
+  }, []);
 
   const value = useMemo(() => {
     const robots = state.robots;

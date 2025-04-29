@@ -6,6 +6,8 @@ import { useBehaviors } from "@/providers/behavior-provider";
 import { AggregatedTable } from "@/protos/generated/sbai_system_alert_protos/sbai_system_alert_protos/aggregated_table";
 import { BehaviorStatus } from "@/protos/generated/sbai_task_protos/sbai_task_protos/behavior_status";
 import { BehaviorStatusUI } from "@/reducers/behavior-reducer";
+import { GeoPath } from "@/protos/generated/sbai_geographic_protos/sbai_geographic_protos/geo_path";
+import { useRobotPaths } from "@/providers/robot-path-provider";
 
 // translate from proto enum (int) to UI status
 function toBehaviorStatusUI(protoStatus: number): BehaviorStatusUI {
@@ -28,7 +30,7 @@ function toBehaviorStatusUI(protoStatus: number): BehaviorStatusUI {
 export function BehaviorStatusProvider({ children }: { children: ReactNode }) {
   const { session, isConnected } = useZenoh();
   const { behaviors } = useBehaviors(); // for robot lookup
-  const { cancelBehavior } = useBehaviors(); // optional if you want to auto-cancel
+  const { updateRobotPath } = useRobotPaths();
 
   const { dispatch } = useBehaviors();
 
@@ -97,17 +99,20 @@ export function BehaviorStatusProvider({ children }: { children: ReactNode }) {
               `✅ Updated behavior ${behaviorId} → ${statusUI.toUpperCase()}`
             );
           } else if (tableKey === "geo_path") {
-            // You might want to process geo_path data in the future
-            console.log(
-              "Received geo_path data",
-              bytes.length > 0 ? "with content" : "empty"
-            );
+            try {
+              // Decode the GeoPath message from the binary data
+              const geoPath = GeoPath.decode(bytes as Uint8Array);
+
+              updateRobotPath(table.robotId, geoPath);
+            } catch (error) {
+              console.error("Failed to decode GeoPath:", error);
+            }
           } else {
             console.log(`Skipping unknown table key: ${tableKey}`);
           }
         }
       } catch (err) {
-        console.error("❌ Failed to decode AggregatedTable:", err);
+        console.error("Failed to decode AggregatedTable:", err);
         console.error(
           "Error details:",
           err instanceof Error ? err.message : String(err)

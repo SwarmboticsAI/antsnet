@@ -33,15 +33,16 @@ export function useMapIcons({
     robots.forEach((robot) => {
       // Create icon element
       const iconEl = document.createElement("div");
+
+      const adjustedHeading = robot?.heading ?? 0;
+
       iconEl.innerHTML = `
           <svg
             width="26"
             height="26"
             viewBox="0 0 370 450"
             xmlns="http://www.w3.org/2000/svg"
-          style="transform: rotate(${
-            robot?.heading
-          }deg); filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.2));"
+            style="transform-origin: center; transform: rotate(${adjustedHeading}deg); filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.2));"
           >
             <path
               d="M185.5 7L363.5 446.5L185.5 321M184.5 7L6.5 446.5L184.5 321"
@@ -84,6 +85,7 @@ export function useMapIcons({
         element: iconEl,
         pitchAlignment: "map",
         rotationAlignment: "map",
+        anchor: "center", // Ensure the marker is anchored to its center
       })
         .setLngLat([
           robot?.gpsCoordinates?.longitude ?? 0,
@@ -108,5 +110,12 @@ export function useMapIcons({
 
       labelMarkersRef.current.push(labelMarker);
     });
-  }, [robots, iconMarkersRef, labelMarkersRef, mapRef, onIconClick]);
+  }, [
+    robots,
+    iconMarkersRef,
+    labelMarkersRef,
+    mapRef,
+    onIconClick,
+    selectedRobotIds,
+  ]);
 }

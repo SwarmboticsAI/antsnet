@@ -33,6 +33,7 @@ import { Robot } from "@/types/Robot";
 import { BehaviorInfo, BehaviorStatusUI } from "@/reducers/behavior-reducer";
 import { useBehaviorLayers } from "@/hooks/use-active-behavior-layer";
 import { useProfile } from "@/providers/profile-provider";
+import { useRobotPathLayer } from "@/hooks/use-robot-path-layer";
 
 export default function RobotDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,7 @@ export default function RobotDetailsPage() {
   const { hasActiveSession, requestSession } = useSessions();
   const { profile } = useProfile();
   const { cancelBehavior, behaviorsByStatus } = useBehaviors();
+  const robotPathLayer = useRobotPathLayer();
 
   // Add this state to explicitly control panel visibility
   const [showWaypointPanel, setShowWaypointPanel] = useState(false);
@@ -346,7 +348,12 @@ export default function RobotDetailsPage() {
             addPoint([info.coordinate[1], info.coordinate[0]]);
           }
         }}
-        layers={[...behaviorLayers, ...standardLayers, ...activeBehaviorLayers]}
+        layers={[
+          ...behaviorLayers,
+          ...standardLayers,
+          ...activeBehaviorLayers,
+          robotPathLayer,
+        ]}
         robots={robots}
       />
 

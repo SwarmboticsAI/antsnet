@@ -53,7 +53,7 @@ export function RobotMap({
 }) {
   const router = useRouter();
   const { deckRef, mapRef, viewState, setViewState, flyTo } = useMapContext();
-  const { state: drawingState } = useGeoDrawing();
+
   const [clickedCoords, setClickedCoords] = useState<{
     lng: number;
     lat: number;
@@ -321,9 +321,10 @@ export function RobotMap({
               // mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
               mapStyle={satelliteMapStyle}
               projection="mercator"
-              maxTileCacheSize={1000}
-              maxTileCacheZoomLevels={3}
-              refreshExpiredTiles={false}
+              maxTileCacheSize={100}
+              maxTileCacheZoomLevels={1}
+              refreshExpiredTiles={true}
+              reuseMaps={false}
             />
           </DeckGL>
         </ContextMenuTrigger>

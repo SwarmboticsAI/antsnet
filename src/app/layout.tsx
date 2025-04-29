@@ -20,6 +20,7 @@ import { MissionProvider } from "@/providers/mission-provider";
 import { RobotSelectionProvider } from "@/providers/robot-selection-provider";
 import { BehaviorCreatorProvider } from "@/providers/behavior-creator-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
+import { RobotPathProvider } from "@/providers/robot-path-provider";
 import { ProfileSetupWrapper } from "@/components/profile-setup-wrapper";
 import "./globals.css";
 
@@ -60,33 +61,35 @@ export default function RootLayout({
                 <SessionProvider>
                   <RobotSelectionProvider>
                     <RobotProvider>
-                      <QueryProvider>
-                        <BehaviorProvider>
-                          <BehaviorStatusProvider>
-                            <GeoDrawProvider>
-                              <BehaviorCreatorProvider>
-                                <MissionDraftProvider>
-                                  <MissionProvider>
-                                    <RobotAssignmentProvider>
-                                      <TeleopProvider>
-                                        <MapProvider>
-                                          <MapFeatureProvider>
-                                            <BehaviorDrawingProvider>
-                                              <Navigation />
-                                              {children}
-                                              <Toaster />
-                                            </BehaviorDrawingProvider>
-                                          </MapFeatureProvider>
-                                        </MapProvider>
-                                      </TeleopProvider>
-                                    </RobotAssignmentProvider>
-                                  </MissionProvider>
-                                </MissionDraftProvider>
-                              </BehaviorCreatorProvider>
-                            </GeoDrawProvider>
-                          </BehaviorStatusProvider>
-                        </BehaviorProvider>
-                      </QueryProvider>
+                      <RobotPathProvider>
+                        <QueryProvider>
+                          <BehaviorProvider>
+                            <BehaviorStatusProvider>
+                              <GeoDrawProvider>
+                                <BehaviorCreatorProvider>
+                                  <MissionDraftProvider>
+                                    <MissionProvider>
+                                      <RobotAssignmentProvider>
+                                        <TeleopProvider>
+                                          <MapProvider>
+                                            <MapFeatureProvider>
+                                              <BehaviorDrawingProvider>
+                                                <Navigation />
+                                                {children}
+                                                <Toaster />
+                                              </BehaviorDrawingProvider>
+                                            </MapFeatureProvider>
+                                          </MapProvider>
+                                        </TeleopProvider>
+                                      </RobotAssignmentProvider>
+                                    </MissionProvider>
+                                  </MissionDraftProvider>
+                                </BehaviorCreatorProvider>
+                              </GeoDrawProvider>
+                            </BehaviorStatusProvider>
+                          </BehaviorProvider>
+                        </QueryProvider>
+                      </RobotPathProvider>
                     </RobotProvider>
                   </RobotSelectionProvider>
                 </SessionProvider>

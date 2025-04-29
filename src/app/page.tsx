@@ -22,6 +22,7 @@ import { useSessions } from "@/providers/session-provider";
 import { getBatteryIcon } from "@/utils/get-battery-icon";
 import { Robot } from "@/types/Robot";
 import { cn } from "@/lib/utils";
+import { useRobotPathLayer } from "@/hooks/use-robot-path-layer";
 
 export default function Home() {
   const { state, addPoint, resetDrawing, startDrawing } = useGeoDrawing();
@@ -34,6 +35,8 @@ export default function Home() {
   const geoDrawLayer = useGeoDrawLayer();
   const standardLayers = useStandardLayers();
   const activeBehaviorLayers = useBehaviorLayers();
+  const robotPathLayer = useRobotPathLayer();
+
   const {
     hasActiveSession,
     terminateSession,
@@ -210,7 +213,12 @@ export default function Home() {
       </SidebarProvider>
       <RobotMap
         robots={robots}
-        layers={[...standardLayers, ...geoDrawLayer, ...activeBehaviorLayers]}
+        layers={[
+          ...standardLayers,
+          ...geoDrawLayer,
+          ...activeBehaviorLayers,
+          robotPathLayer,
+        ]}
         onDeckClick={(info) => {
           if (state.mode === "drawing" && selectedRobotIds.length > 0) {
             if (info?.coordinate) {

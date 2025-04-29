@@ -250,10 +250,6 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
     };
   }, [isConnected, session, state.sessions, takId, getNextSequence]);
 
-  useEffect(() => {
-    console.log(activeRobotIds, "are active");
-  }, [activeRobotIds]);
-
   const requestSession = useCallback(
     async (robotId: string, takId: string) => {
       if (!isConnected || !session) return false;

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import VideoStreamPlayer from "@/components/video-player";
 import { Button } from "@/components/ui/button";
-import { RobotMap } from "@/components/map";
 import { useTeleopControls } from "@/hooks/use-teleop-controls";
 import { useRobots } from "@/providers/robot-provider";
 import { useTeleop } from "@/providers/teleop-provider";
@@ -24,10 +23,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useProfile } from "@/providers/profile-provider";
+import { RobotMap } from "@/components/map";
+import { useMapContext } from "@/providers/map-provider";
 
 export default function TeleopPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setViewState } = useMapContext();
   const { profile } = useProfile();
   const robotId = searchParams.get("robot_id");
   const { getRobotById } = useRobots();
@@ -48,11 +50,16 @@ export default function TeleopPage() {
     return getRobotById(robotId);
   }, [robotId, getRobotById]);
 
-  // Create a teleop send command wrapper that prevents sending commands during exit
-  interface TeleopCommand {
-    throttle: number;
-    steering: number;
-  }
+  const normalizedHeading = ((robot?.heading % 360) + 360) % 360;
+
+  // Get cardinal direction based on heading
+  const getCardinalDirection = (degrees: number) => {
+    const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+    const index = Math.round(degrees / 45) % 8;
+    return directions[index];
+  };
+
+  const direction = getCardinalDirection(normalizedHeading);
 
   const sendTeleopCommand = (t: number, s: number): void => {
     if (isExiting) {
@@ -131,6 +138,11 @@ export default function TeleopPage() {
       } finally {
         if (!isUnmounted.current) {
           setIsInitializing(false);
+          setViewState({
+            longitude: robot?.gpsCoordinates?.longitude ?? 0,
+            latitude: robot?.gpsCoordinates?.latitude ?? 0,
+            zoom: 20, // Default zoom level
+          });
         }
       }
     };
@@ -172,7 +184,7 @@ export default function TeleopPage() {
         }
       }, 100);
     };
-  }, []); // Empty dependency array means this only runs on mount/unmount
+  }, []);
 
   const isConnected = state === "active";
   const isConnecting = state === "requesting" || isInitializing;
@@ -194,7 +206,7 @@ export default function TeleopPage() {
       // Then stop teleop
       stopTeleop().finally(() => {
         // Finally navigate away
-        router.back();
+        router.push("/");
       });
     }, 100);
   };
@@ -215,7 +227,7 @@ export default function TeleopPage() {
   return (
     <div className="w-full h-svh bg-black text-white relative overflow-hidden">
       <div className="h-full">
-        <div className="absolute top-15 left-0 w-full h-full bg-blue-900">
+        <div className="absolute top-15 left-0 right-0 w-full h-full ">
           {robot?.vpnIpAddress && (
             <VideoStreamPlayer ipAddress={robot.vpnIpAddress} />
           )}
@@ -241,10 +253,17 @@ export default function TeleopPage() {
         </div>
 
         <div className="absolute flex flex-col items-center justify-start pt-5 bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2 h-72 bg-black/50 rounded-full w-120 border-4 border-muted/50 shadow-2xl">
-          <h1 className="text-8xl">{robot?.speed?.toFixed(1)}</h1>
+          <h1 className="text-8xl">
+            {robot?.speed
+              ? Math.abs(robot.speed) < 0.05
+                ? "0.0"
+                : robot.speed.toFixed(1)
+              : "0.0"}
+          </h1>
           <div className="absolute right-20 top-20">
             {getBatteryIcon(robot?.battery ?? 0)}
           </div>
+          <div className="absolute top-20 left-20 text-sm">{direction}</div>
 
           <div className="absolute  -translate-y-1/2 top-1/2 left-0 w-full h-5 bg-muted">
             <div
@@ -258,9 +277,9 @@ export default function TeleopPage() {
           </div>
         </div>
 
-        {/* <div className="absolute top-22 right-0 w-64 h-64 rounded-tl-4xl rounded-bl-4xl overflow-hidden opacity-65 pointer-events-none">
-          <RobotMap robots={[]} />
-        </div> */}
+        <div className="absolute top-28 right-0 w-64 h-64 rounded-tl-4xl rounded-bl-4xl overflow-hidden opacity-65 pointer-events-none">
+          <RobotMap robots={[robot]} />
+        </div>
 
         <Button
           className="absolute top-28 left-4 bg-red-500"
