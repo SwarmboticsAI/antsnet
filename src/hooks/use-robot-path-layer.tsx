@@ -24,7 +24,7 @@ export function useRobotPathLayer(
   const {
     id = "robot-path-layer",
     width = 3,
-    color = [0, 255, 180, 100],
+    color = [255, 255, 255, 150],
     pickable = true,
     opacity = 1.0,
     dashed = true,
