@@ -81,17 +81,12 @@ export const RobotProvider = ({ children }: { children: ReactNode }) => {
       Object.entries(heartbeatTimesRef.current).forEach(([id, ts]) => {
         if (now - ts > STALE_THRESHOLD) {
           const isActive = hasActiveSession(id);
-          console.log(
-            isActive
-              ? `Robot ${id} is offline, terminating session`
-              : `Robot ${id} is offline, no active session to terminate`
-          );
 
           if (isActive) {
             try {
               terminateSession(id);
               toggleRobotSelection(id);
-              dispatch({ type: "MARK_OFFLINE", robotId: id });
+
               console.warn(`Ended session for Robot ${id}, marked offline`);
             } catch (error) {
               console.error(
@@ -99,6 +94,11 @@ export const RobotProvider = ({ children }: { children: ReactNode }) => {
                 error
               );
             }
+          }
+          try {
+            dispatch({ type: "MARK_OFFLINE", robotId: id });
+          } catch (error) {
+            console.error(`Failed to mark robot ${id} as offline:`, error);
           }
         }
       });
