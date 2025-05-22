@@ -1,0 +1,23 @@
+{
+  "name": "@swarmbotics/protos",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "ts-proto": "^2.7.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./index.ts",
+      "require": "./index.js"
+    },
+    "./*": {
+      "import": "./src/*",
+      "require": "./src/*"
+    }
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
