@@ -3,7 +3,7 @@ import { robotRegistryService } from "@/services/robots/robot-registry";
 
 const router = Router();
 
-router.delete("/api/robots/:robotId", (req: any, res: any) => {
+router.delete("/:robotId", (req: any, res: any) => {
   const { robotId } = req.params;
 
   if (!robotId) {
@@ -12,8 +12,10 @@ router.delete("/api/robots/:robotId", (req: any, res: any) => {
 
   const allRobots = robotRegistryService.getAllRobots();
 
-  if (!allRobots.includes(robotId)) {
-    return res.status(404).json({ error: "Robot not found" });
+  if (allRobots.find((robot) => robot.robotId === robotId) === undefined) {
+    return res.status(404).json({
+      error: `Robot with ID ${robotId} not found`,
+    });
   }
 
   // Attempt to clear any stored intervals for this robot

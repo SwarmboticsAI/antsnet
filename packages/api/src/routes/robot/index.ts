@@ -10,6 +10,6 @@ router.get("/", (req: any, res: any) => {
   return res.json({ robots });
 });
 router.use("/register-robot", registerRoute);
-router.use("/:robotId", unregisterRoute);
+router.use("/", unregisterRoute);
 
 export default router;
