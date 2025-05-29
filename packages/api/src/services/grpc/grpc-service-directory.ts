@@ -38,6 +38,21 @@ export class GrpcServiceDirectory {
 
   public registerRobot(info: RobotInfo): boolean {
     try {
+      // Validate the robot info
+      if (!info.id || !info.address) {
+        console.error(`Invalid robot info provided:`, info);
+        return false;
+      }
+
+      // Validate IP address format (basic check)
+      const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+      if (!ipRegex.test(info.address)) {
+        console.error(
+          `Invalid IP address for robot ${info.id}: ${info.address}`
+        );
+        return false;
+      }
+
       let entry = this.robots.get(info.id);
 
       if (entry) {
@@ -57,6 +72,7 @@ export class GrpcServiceDirectory {
         this.robots.set(info.id, entry);
       }
 
+      console.log(`✅ Robot registered: ${info.id} (${info.address})`);
       return true;
     } catch (error) {
       console.error(`Error registering robot ${info.id}:`, error);
@@ -64,21 +80,128 @@ export class GrpcServiceDirectory {
     }
   }
 
-  private getServiceClient<T extends keyof RobotServices>(
+  private isValidGrpcAddress(address: string): boolean {
+    // More comprehensive validation
+    if (!address || typeof address !== "string") {
+      console.error(`Address is not a string:`, address);
+      return false;
+    }
+
+    if (address.includes("undefined") || address.includes("null")) {
+      console.error(`Address contains undefined/null:`, address);
+      return false;
+    }
+
+    // Check for numeric-only addresses (like just "2954")
+    if (/^\d+$/.test(address)) {
+      console.error(`Address is just a number:`, address);
+      return false;
+    }
+
+    const regex = /^[\d\.]+(:\d+)?$/;
+    const isValid = regex.test(address);
+
+    if (!isValid) {
+      console.error(`Address failed regex validation:`, address);
+    }
+
+    return isValid;
+  }
+
+  private async createClientWithRetry<T extends keyof RobotServices>(
+    robotId: string,
+    serviceType: T,
+    createFn: (
+      address: string,
+      credentials: grpc.ChannelCredentials
+    ) => RobotServices[T],
+    ipAddress: string,
+    maxRetries: number = 3
+  ): Promise<NonNullable<RobotServices[T]>> {
+    const cacheKey = `${robotId}:${String(serviceType)}`;
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(
+          `Creating ${String(
+            serviceType
+          )} client for robot ${robotId} (attempt ${attempt + 1})`
+        );
+
+        const address = `${ipAddress}:50051`;
+
+        // Validate address format before creating client
+        if (!this.isValidGrpcAddress(address)) {
+          throw new Error(`Invalid gRPC address: ${address}`);
+        }
+
+        const client = createFn(address, grpc.credentials.createInsecure());
+
+        // Store successful client
+        this.clientCache.set(cacheKey, client);
+
+        console.log(
+          `✅ Successfully created ${String(
+            serviceType
+          )} client for robot ${robotId}`
+        );
+        return client as NonNullable<RobotServices[T]>;
+      } catch (error) {
+        lastError = error as Error;
+        console.warn(
+          `Attempt ${attempt + 1} failed for ${robotId}:${String(
+            serviceType
+          )}:`,
+          error
+        );
+
+        if (attempt < maxRetries) {
+          const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s delays
+          console.log(`Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw new Error(
+      `Failed to create ${String(
+        serviceType
+      )} client for robot ${robotId} after ${
+        maxRetries + 1
+      } attempts. Last error: ${lastError?.message}`
+    );
+  }
+
+  private async getServiceClient<T extends keyof RobotServices>(
     robotId: string,
     serviceType: T,
     createFn: (
       address: string,
       credentials: grpc.ChannelCredentials
     ) => RobotServices[T]
-  ): NonNullable<RobotServices[T]> {
+  ): Promise<NonNullable<RobotServices[T]>> {
     const robot = robotRegistryService.getRobot(robotId);
 
     if (!robot) {
       throw new Error(`Robot ${robotId} not registered`);
     }
 
-    // Create a cache key using robotId and serviceType
+    console.log(`Robot data for ${robotId}:`, robot); // Debug log
+
+    if (!robot.vpnIpAddress) {
+      throw new Error(`Robot ${robotId} has no VPN IP address`);
+    }
+
+    // Additional validation
+    if (typeof robot.vpnIpAddress !== "string") {
+      throw new Error(
+        `Robot ${robotId} VPN IP address is not a string: ${typeof robot.vpnIpAddress} - ${
+          robot.vpnIpAddress
+        }`
+      );
+    }
+
     const cacheKey = `${robotId}:${String(serviceType)}`;
 
     // Check if we already have a cached client
@@ -86,22 +209,18 @@ export class GrpcServiceDirectory {
       return this.clientCache.get(cacheKey);
     }
 
-    // Create a new client
-    console.log(
-      `Creating new ${String(serviceType)} client for robot ${robotId}`
+    // Create new client with retry logic
+    return await this.createClientWithRetry(
+      robotId,
+      serviceType,
+      createFn,
+      robot.vpnIpAddress
     );
-    const client = createFn(
-      `${robot.vpnIpAddress}:50051`,
-      grpc.credentials.createInsecure()
-    );
-
-    // Store it in the cache
-    this.clientCache.set(cacheKey, client);
-
-    return client as NonNullable<RobotServices[T]>;
   }
 
-  public getDataStreamClient(robotId: string): DataServiceClient {
+  public async getDataStreamClient(
+    robotId: string
+  ): Promise<DataServiceClient> {
     return this.getServiceClient(
       robotId,
       "dataStream",
@@ -129,7 +248,9 @@ export class GrpcServiceDirectory {
     }
   }
 
-  public getDirectControlClient(robotId: string): DirectControlServiceClient {
+  public async getDirectControlClient(
+    robotId: string
+  ): Promise<DirectControlServiceClient> {
     return this.getServiceClient(
       robotId,
       "directControl",
@@ -139,7 +260,9 @@ export class GrpcServiceDirectory {
     );
   }
 
-  public getNavigateToPoseClient(robotId: string): NavigateToPoseServiceClient {
+  public async getNavigateToPoseClient(
+    robotId: string
+  ): Promise<NavigateToPoseServiceClient> {
     return this.getServiceClient(
       robotId,
       "navigateToPose",
@@ -149,7 +272,9 @@ export class GrpcServiceDirectory {
     );
   }
 
-  public getBehaviorServiceClient(robotId: string): BehaviorServiceClient {
+  public async getBehaviorServiceClient(
+    robotId: string
+  ): Promise<BehaviorServiceClient> {
     return this.getServiceClient(
       robotId,
       "behaviors",
@@ -159,25 +284,29 @@ export class GrpcServiceDirectory {
     );
   }
 
-  public getPayloadClient(robotId: string): PayloadServiceClient {
+  public async getPayloadClient(
+    robotId: string
+  ): Promise<PayloadServiceClient> {
     return this.getServiceClient(robotId, "payload", (address, credentials) => {
       return new PayloadServiceClient(address, credentials);
     });
   }
 
-  public getBoomClient(robotId: string): BoomServiceClient {
+  public async getBoomClient(robotId: string): Promise<BoomServiceClient> {
     return this.getServiceClient(robotId, "boom", (address, credentials) => {
       return new BoomServiceClient(address, credentials);
     });
   }
 
-  public getTeleopClient(robotId: string): TeleopServiceClient {
+  public async getTeleopClient(robotId: string): Promise<TeleopServiceClient> {
     return this.getServiceClient(robotId, "teleop", (address, credentials) => {
       return new TeleopServiceClient(address, credentials);
     });
   }
 
-  public getStateChangeClient(robotId: string): ChangeStateServiceClient {
+  public async getStateChangeClient(
+    robotId: string
+  ): Promise<ChangeStateServiceClient> {
     return this.getServiceClient(
       robotId,
       "stateChange",

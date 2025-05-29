@@ -76,22 +76,40 @@ export type LocalizationTableData = {
 
 const router = Router();
 
-router.post("/", (req: any, res: any) => {
+router.post("/", async (req: any, res: any) => {
   const { robotId, vpnIpAddress } = req.body;
 
   if (!robotId || !vpnIpAddress) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  if (robotId !== "fa005" && robotId !== "fa009") {
-    return res.status(400).json({ error: "Invalid robot ID" });
-  }
-
   robotRegistryService.addRobot(robotId, vpnIpAddress);
   console.log(`✅ Robot registered: ${robotId} (${vpnIpAddress})`);
 
-  grpcServiceDirectory.registerRobot(robotId);
-  const client = grpcServiceDirectory.getDataStreamClient(robotId);
+  const registrationSuccess = grpcServiceDirectory.registerRobot({
+    id: robotId,
+    address: vpnIpAddress,
+    lastSeen: new Date(),
+  });
+
+  if (!registrationSuccess) {
+    return res.status(400).json({ error: "Failed to register robot" });
+  }
+
+  let client;
+  try {
+    client = await grpcServiceDirectory.getDataStreamClient(robotId);
+  } catch (error) {
+    console.error(
+      `Failed to create data stream client for robot ${robotId}:`,
+      error
+    );
+    return res.status(500).json({
+      error: "Failed to connect to robot",
+      details: (error as Error).message,
+    });
+  }
+
   const intervals = [];
 
   // Network table polling with decoding
