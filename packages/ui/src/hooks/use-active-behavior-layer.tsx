@@ -35,8 +35,6 @@ export function useBehaviorLayers(): DeckLayer[] {
 
       if (!geoPoints.length) return [];
 
-      console.log(params);
-
       switch (type) {
         case Behavior.BEHAVIOR_MULTI_WAYPOINT_NAVIGATION:
           return [

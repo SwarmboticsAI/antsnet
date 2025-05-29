@@ -3,6 +3,7 @@ import { requestDefend } from "@/lib/behaviors/defend";
 import { DefendRequest } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/defend_request";
 
 export function useDefendRequest() {
+  const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
 
   const sendDefendRequest = useCallback(
@@ -12,6 +13,9 @@ export function useDefendRequest() {
         await requestDefend(params);
       } catch (error) {
         console.error("Error sending rally request:", error);
+        setError(
+          error instanceof Error ? error.message : "Unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -19,5 +23,5 @@ export function useDefendRequest() {
     []
   );
 
-  return { sendDefendRequest, loading };
+  return { sendDefendRequest, loading, error };
 }

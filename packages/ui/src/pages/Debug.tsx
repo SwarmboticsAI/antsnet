@@ -100,50 +100,9 @@ export function Debug() {
                           // Convert robot object to CSV with readable values
                           const robotData = {
                             robotId: robot.robotId,
-                            status: robot.status,
-                            latitude: robot.gpsCoordinates?.latitude,
-                            longitude: robot.gpsCoordinates?.longitude,
-                            altitude: robot.gpsCoordinates?.altitude,
-                            heading: robot.heading,
-                            speed: robot.speed,
-                            battery: robot.battery,
-                            controllingTakId: robot.controllingTakId || "",
-                            parkingBrake: getEnumString(
-                              ParkingBrakeState,
-                              robot.parkingBrakeState
-                            ),
-                            emergencyStop: getEnumString(
-                              EmergencyStopState,
-                              robot.emergencyStopStatus
-                            ),
-                            canStatus: getEnumString(CanState, robot.canStatus),
-                            boomButtonStatus: getEnumString(
-                              BoomButtonState,
-                              robot.boomButtonStatus
-                            ),
-                            oakStatus: getEnumString(OakState, robot.oakStatus),
-                            terrainMapStatus: getEnumString(
-                              TerrainMapHealthStatus,
-                              robot.terrainMapStatus
-                            ),
-                            starlinkState: robot.starlinkStatus
-                              ? getEnumString(
-                                  StarlinkState,
-                                  robot.starlinkStatus.state
-                                )
-                              : "",
-                            starlinkLatency:
-                              robot.starlinkStatus?.popPingLatencyMs,
-                            starlinkPacketLoss:
-                              robot.starlinkStatus?.popPingDropRate,
-                            vpnIpAddress: robot.vpnIpAddress,
+                            platformType: robot.platformType,
                             ipAddress: robot.ipAddress,
-                            zerotierPeerId: robot.zerotierConnection?.peerId,
-                            zerotierBonded: robot.zerotierConnection?.isBonded,
-                            zerotierActive:
-                              robot.zerotierConnection?.activeEligible,
-                            zerotierInternetType:
-                              robot.zerotierConnection?.activeInternetType,
+                            vpnIpAddress: robot.vpnIpAddress,
                             lastSeen: robot.lastSeen
                               ? new Date(robot.lastSeen).toISOString()
                               : "",

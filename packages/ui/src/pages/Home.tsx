@@ -15,6 +15,7 @@ import { useGeoDrawing } from "@/providers/geo-drawing-provider";
 import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { useRobotStore } from "@/stores/robot-store";
 import type { Robot } from "@/types/robot";
+import { useRobotLocalizationStore } from "@/stores/localization-store";
 
 export function Home() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export function Home() {
     useRobotSelection();
   const { behaviorsByStatus, getBehaviorsThatNeedIntervention } =
     useBehaviors();
+  const { localizationTables } = useRobotLocalizationStore();
 
   const behaviorsThatNeedIntervention = getBehaviorsThatNeedIntervention();
   const robotsThatNeedIntervention = useMemo(() => {
@@ -117,7 +119,9 @@ export function Home() {
                   );
 
                   if (initialRobot && !hasActive) {
-                    const pos = initialRobot.gpsCoordinates;
+                    const pos =
+                      localizationTables[initialRobot.robotId]
+                        ?.localization_data?.gpsCoordinate;
                     if (pos) {
                       addPoint([pos.latitude, pos.longitude]);
                     }

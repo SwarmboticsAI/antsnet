@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { BehaviorExecutionState } from "@swarmbotics/protos/ros2_interfaces/sbai_behavior_protos/sbai_behavior_protos/behavior_execution_state";
+import type { BehaviorExecutionState } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_execution_state";
 
 interface TaskTablesState {
   taskTables: Record<string, BehaviorExecutionState>;

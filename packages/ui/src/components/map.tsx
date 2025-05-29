@@ -48,7 +48,6 @@ export function RobotMap({
   const { deckRef, mapRef, viewState, setViewState, flyTo } = useMapContext();
   const { isBoxSelecting, isCtrlPressed } = useBoxSelection(robots);
   const { selectedRobotIds, toggleRobotSelection } = useRobotSelection();
-
   const [isMapMoving, setIsMapMoving] = useState(false);
   const [clickedCoords, setClickedCoords] = useState<{
     lng: number;
@@ -76,7 +75,7 @@ export function RobotMap({
   );
 
   const handleClick = (info: PickingInfo, event: MjolnirEvent) => {
-    if (isBoxSelecting || isCtrlPressed) return;
+    if (isBoxSelecting) return;
 
     const isRightClick =
       event.srcEvent instanceof MouseEvent && event.srcEvent.button === 2;
@@ -182,7 +181,12 @@ export function RobotMap({
     iconMarkersRef,
     labelMarkersRef,
     robots,
-    onIconClick: () => null,
+    onIconClick: (event, robot) => {
+      event.stopPropagation();
+      if (!isCtrlPressed) return;
+
+      toggleRobotSelection(robot.robotId);
+    },
   });
 
   const deckGLComponent = (

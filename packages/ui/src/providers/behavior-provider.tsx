@@ -144,8 +144,6 @@ export const BehaviorProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        // TODO: send rest request to the server
-
         switch (command) {
           case BehaviorControl.BEHAVIOR_CONTROL_PAUSE:
             // Update just this robot's status
@@ -200,11 +198,6 @@ export const BehaviorProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        for (const robotId of behavior.robotIds) {
-          // TODO: send rest request to the server
-          // Currently, robotId is unused, but it might be used in the future for server requests.
-        }
-
         switch (command) {
           case BehaviorControl.BEHAVIOR_CONTROL_PAUSE:
             dispatch({

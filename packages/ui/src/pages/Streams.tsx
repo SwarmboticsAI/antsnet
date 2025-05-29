@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { VideoPlayer } from "@/components/video-player";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,10 +16,9 @@ import { type Robot } from "@/types/robot";
 
 export function Streams() {
   const { sortedRobots: robots } = useRobotStore();
-  const [selectedRobots, setSelectedRobots] = useState<string[]>(
-    robots.map((r: Robot) => r.robotId)
-  );
+  const [selectedRobots, setSelectedRobots] = useState<string[]>([]);
   const [cameraFeed, setCameraFeed] = useState<string>("color/low");
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const handleToggle = (robotId: string) => {
     setSelectedRobots((prevSelected) => {
@@ -33,19 +32,23 @@ export function Streams() {
     });
   };
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     setSelectedRobots(robots.map((r: Robot) => r.robotId));
-  };
+  }, [robots]);
 
   const handleClearAll = () => {
     setSelectedRobots([]);
   };
 
+  // Only auto-select all robots once when robots first load
   useEffect(() => {
-    setTimeout(() => {
-      handleSelectAll();
-    }, 100);
-  }, [handleSelectAll]);
+    if (robots.length > 0 && !hasInitialized) {
+      setTimeout(() => {
+        handleSelectAll();
+        setHasInitialized(true);
+      }, 100);
+    }
+  }, [robots.length, hasInitialized, handleSelectAll]);
 
   const maxDisplay = 6;
   const selected = robots.filter((r: Robot) =>
@@ -127,8 +130,8 @@ export function Streams() {
                     className="relative rounded-lg overflow-hidden bg-background border shadow-md animate-fade-in"
                   >
                     <div className="p-0 flex items-center justify-between">
-                      <h2 className="text-sm font-semibold uppercase absolute top-4 left-4 truncate w-full">
-                        {robot.robotId}
+                      <h2 className="text-lg bg-black/50 text-white px-4 py-2 rounded-sm font-semibold absolute top-2 left-2 truncate z-40">
+                        {robot.robotId.toUpperCase()}
                       </h2>
                     </div>
                     <div className="aspect-video w-full">

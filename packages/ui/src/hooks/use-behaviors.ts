@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import { useRobotTaskStore } from "@/stores/task-store";
 import { BehaviorStatusUI } from "@/types/behavior";
-import { BehaviorExecutionState } from "@swarmbotics/protos/ros2_interfaces/sbai_behavior_protos/sbai_behavior_protos/behavior_execution_state";
-import type { ActiveBehaviorState } from "@swarmbotics/protos/ros2_interfaces/sbai_behavior_protos/sbai_behavior_protos/active_behavior_states";
-import type { CompletedBehaviors } from "@swarmbotics/protos/ros2_interfaces/sbai_behavior_protos/sbai_behavior_protos/completed_behaviors";
-import type { BehaviorRequest } from "@swarmbotics/protos/ros2_interfaces/sbai_behavior_protos/sbai_behavior_protos/behavior_request";
+import { BehaviorExecutionState } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_execution_state";
+import type { ActiveBehaviorState } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/active_behavior_states";
+import type { CompletedBehaviors } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/completed_behaviors";
+import type { BehaviorRequest } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_request";
 
 export type ResolvedBehavior = {
   behaviorId: string;

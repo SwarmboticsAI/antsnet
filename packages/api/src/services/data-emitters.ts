@@ -28,6 +28,13 @@ export interface TaskUpdateEvent {
   timestamp: number;
 }
 
+export interface LocalizationUpdateEvent {
+  robotId: string;
+  table: "localization";
+  data: any;
+  timestamp: number;
+}
+
 // Helper functions to subscribe to events
 export function onNetworkTableUpdate(cb: (event: NetworkUpdateEvent) => void) {
   robotDataEmitter.on("networkUpdate", cb);
@@ -42,4 +49,11 @@ export function onSystemTableUpdate(cb: (event: SystemUpdateEvent) => void) {
 export function onTaskTableUpdate(cb: (event: TaskUpdateEvent) => void) {
   robotDataEmitter.on("taskUpdate", cb);
   return () => robotDataEmitter.off("taskUpdate", cb);
+}
+
+export function onLocalizationUpdate(
+  cb: (event: LocalizationUpdateEvent) => void
+) {
+  robotDataEmitter.on("localizationUpdate", cb);
+  return () => robotDataEmitter.off("localizationUpdate", cb);
 }

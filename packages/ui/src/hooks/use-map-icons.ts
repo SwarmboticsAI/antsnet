@@ -2,21 +2,23 @@ import { type RefObject, useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import gsap from "gsap";
 import { useRobotSelection } from "@/providers/robot-selection-provider";
+import { useRobotLocalizationStore } from "@/stores/localization-store";
 import { type Robot } from "@/types/robot";
 
 export function useMapIcons({
+  robots,
   mapRef,
   iconMarkersRef,
   labelMarkersRef,
-  robots,
   onIconClick,
 }: {
+  robots: Robot[];
   mapRef: RefObject<maplibregl.Map | null>;
   iconMarkersRef?: RefObject<maplibregl.Marker[]>;
   labelMarkersRef?: RefObject<maplibregl.Marker[]>;
-  robots: Robot[];
-  onIconClick?: (robot: Robot) => void;
+  onIconClick?: (e: MouseEvent, robot: Robot) => void;
 }) {
+  const { localizationTables } = useRobotLocalizationStore();
   const { selectedRobotIds } = useRobotSelection();
   const markersMapRef = useRef<
     Map<
@@ -38,85 +40,88 @@ export function useMapIcons({
 
     const processedRobots = new Set<string>();
 
-    robots.forEach((robot) => {
-      const robotId = robot.robotId;
-      processedRobots.add(robotId);
+    Object.entries(localizationTables).forEach(
+      ([robotId, localizationTable]) => {
+        processedRobots.add(robotId);
 
-      const newLng = robot?.gpsCoordinates?.longitude ?? 0;
-      const newLat = robot?.gpsCoordinates?.latitude ?? 0;
-      const newHeading = robot?.heading ?? 0;
+        const newLng =
+          localizationTable?.localization_data?.gpsCoordinate?.longitude ?? 0;
+        const newLat =
+          localizationTable?.localization_data?.gpsCoordinate?.latitude ?? 0;
+        const newHeading =
+          localizationTable?.localization_data?.magneticHeadingDeg ?? 0;
 
-      let markerEntry = markersMapRef.current.get(robotId);
+        let markerEntry = markersMapRef.current.get(robotId);
 
-      if (markerEntry) {
-        const iconMarker = markerEntry.icon;
-        const labelMarker = markerEntry.label;
+        if (markerEntry) {
+          const iconMarker = markerEntry.icon;
+          const labelMarker = markerEntry.label;
 
-        if (markerEntry.animation) {
-          markerEntry.animation.kill();
-        }
-
-        const currentPos = iconMarker.getLngLat();
-
-        if (
-          Math.abs(currentPos.lng - newLng) > 0.0000001 ||
-          Math.abs(currentPos.lat - newLat) > 0.0000001
-        ) {
-          const pos = {
-            lng: currentPos.lng,
-            lat: currentPos.lat,
-            heading: parseFloat(
-              iconMarker
-                .getElement()
-                .querySelector("svg")
-                ?.style.transform.match(/rotate\(([^)]+)\)/)?.[1] || "0"
-            ),
-          };
-
-          let targetHeading = newHeading;
-          const currentHeading = pos.heading;
-          const diff = (((targetHeading - currentHeading) % 360) + 360) % 360;
-          if (diff > 180) {
-            targetHeading = currentHeading - (360 - diff);
-          } else {
-            targetHeading = currentHeading + diff;
+          if (markerEntry.animation) {
+            markerEntry.animation.kill();
           }
 
-          const animation = gsap.to(pos, {
-            lng: newLng,
-            lat: newLat,
-            heading: targetHeading,
-            duration: 0.2,
+          const currentPos = iconMarker.getLngLat();
 
-            onUpdate: () => {
-              iconMarker.setLngLat([pos.lng, pos.lat]);
-              labelMarker.setLngLat([pos.lng, pos.lat]);
+          if (
+            Math.abs(currentPos.lng - newLng) > 0.0000001 ||
+            Math.abs(currentPos.lat - newLat) > 0.0000001
+          ) {
+            const pos = {
+              lng: currentPos.lng,
+              lat: currentPos.lat,
+              heading: parseFloat(
+                iconMarker
+                  .getElement()
+                  .querySelector("svg")
+                  ?.style.transform.match(/rotate\(([^)]+)\)/)?.[1] || "0"
+              ),
+            };
 
-              const iconEl = iconMarker.getElement();
-              const svg = iconEl.querySelector("svg");
-              if (svg) {
-                svg.style.transform = `rotate(${pos.heading}deg)`;
-              }
-            },
-          });
+            let targetHeading = newHeading;
+            const currentHeading = pos.heading;
+            const diff = (((targetHeading - currentHeading) % 360) + 360) % 360;
+            if (diff > 180) {
+              targetHeading = currentHeading - (360 - diff);
+            } else {
+              targetHeading = currentHeading + diff;
+            }
 
-          markerEntry.animation = animation;
-        }
+            const animation = gsap.to(pos, {
+              lng: newLng,
+              lat: newLat,
+              heading: targetHeading,
+              duration: 0.5,
 
-        const iconEl = iconMarker.getElement();
-        const path = iconEl.querySelector("path");
-        if (path) {
-          path.setAttribute(
-            "stroke",
-            selectedRobotIds.includes(robotId) ? "#f90" : "#fff"
-          );
-        }
+              onUpdate: () => {
+                iconMarker.setLngLat([pos.lng, pos.lat]);
+                labelMarker.setLngLat([pos.lng, pos.lat]);
 
-        iconMarkersRef.current.push(iconMarker);
-        labelMarkersRef.current.push(labelMarker);
-      } else {
-        const iconEl = document.createElement("div");
-        iconEl.innerHTML = `
+                const iconEl = iconMarker.getElement();
+                const svg = iconEl.querySelector("svg");
+                if (svg) {
+                  svg.style.transform = `rotate(${pos.heading}deg)`;
+                }
+              },
+            });
+
+            markerEntry.animation = animation;
+          }
+
+          const iconEl = iconMarker.getElement();
+          const path = iconEl.querySelector("path");
+          if (path) {
+            path.setAttribute(
+              "stroke",
+              selectedRobotIds.includes(robotId) ? "#bd852b" : "#fff"
+            );
+          }
+
+          iconMarkersRef.current.push(iconMarker);
+          labelMarkersRef.current.push(labelMarker);
+        } else {
+          const iconEl = document.createElement("div");
+          iconEl.innerHTML = `
           <svg
             width="26"
             height="26"
@@ -126,23 +131,23 @@ export function useMapIcons({
           >
             <path
               d="M185.5 7L363.5 446.5L185.5 321M184.5 7L6.5 446.5L184.5 321"
-              stroke="${
-                selectedRobotIds.includes(robotId) ? "#c48a2d00" : "#fff"
-              }"
               stroke-width="38"
               stroke-linecap="round"
               stroke-linejoin="round"
-              fill="rgba(23, 90, 230, 0.6)"
+              fill="rgba(60, 130, 250, 0.8)"
             />
           </svg>
         `;
 
-        iconEl.addEventListener("click", () => {
-          onIconClick?.(robot);
-        });
+          iconEl.addEventListener("click", (e) => {
+            onIconClick?.(
+              e,
+              robots.find((r) => r.robotId === robotId) as Robot
+            );
+          });
 
-        const labelEl = document.createElement("div");
-        labelEl.style.cssText = `
+          const labelEl = document.createElement("div");
+          labelEl.style.cssText = `
           color: white;
           background-color: rgba(0,0,0,0.05);
           padding: 0px 8px;
@@ -156,36 +161,38 @@ export function useMapIcons({
           pointer-events: none;
           text-align: center;
         `;
-        labelEl.textContent = robotId ?? `Robot ${robots.indexOf(robot) + 1}`;
+          labelEl.textContent =
+            robotId ?? `Robot ${robots.indexOf(robotId) + 1}`;
 
-        const iconMarker = new maplibregl.Marker({
-          element: iconEl,
-          pitchAlignment: "map",
-          rotationAlignment: "map",
-          anchor: "center",
-        })
-          .setLngLat([newLng, newLat])
-          .addTo(map);
+          const iconMarker = new maplibregl.Marker({
+            element: iconEl,
+            pitchAlignment: "map",
+            rotationAlignment: "map",
+            anchor: "center",
+          })
+            .setLngLat([newLng, newLat])
+            .addTo(map);
 
-        const labelMarker = new maplibregl.Marker({
-          element: labelEl,
-          pitchAlignment: "viewport",
-          rotationAlignment: "viewport",
-          offset: [0, 30],
-        })
-          .setLngLat([newLng, newLat])
-          .addTo(map);
+          const labelMarker = new maplibregl.Marker({
+            element: labelEl,
+            pitchAlignment: "viewport",
+            rotationAlignment: "viewport",
+            offset: [0, 30],
+          })
+            .setLngLat([newLng, newLat])
+            .addTo(map);
 
-        markersMapRef.current.set(robotId, {
-          icon: iconMarker,
-          label: labelMarker,
-          animation: null,
-        });
+          markersMapRef.current.set(robotId, {
+            icon: iconMarker,
+            label: labelMarker,
+            animation: null,
+          });
 
-        iconMarkersRef.current.push(iconMarker);
-        labelMarkersRef.current.push(labelMarker);
+          iconMarkersRef.current.push(iconMarker);
+          labelMarkersRef.current.push(labelMarker);
+        }
       }
-    });
+    );
 
     markersMapRef.current.forEach((entry, robotId) => {
       if (!processedRobots.has(robotId)) {
@@ -199,6 +206,7 @@ export function useMapIcons({
     });
   }, [
     robots,
+    localizationTables,
     iconMarkersRef,
     labelMarkersRef,
     mapRef,

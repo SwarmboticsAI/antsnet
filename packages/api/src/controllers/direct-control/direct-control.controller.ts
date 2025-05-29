@@ -22,6 +22,29 @@ export const startDirectControlRequest = async (
       return;
     }
 
+    try {
+      if (SessionManager.findSessionsByRobot(robotId).length > 0) {
+        console.warn(
+          `A session for robot ${robotId} already exists. Overwriting the stream.`
+        );
+        // If a session already exists, we can end the previous stream
+        const existingSession = SessionManager.findSessionsByRobot(robotId)[0];
+        if (existingSession?.stream) {
+          existingSession.stream.end();
+        }
+      }
+    } catch (streamErr) {
+      console.error(
+        `Error ending previous stream for robot ${robotId}:`,
+        streamErr
+      );
+      return res.status(500).json({
+        success: false,
+        message: "Failed to end previous stream",
+        error: (streamErr as Error).message,
+      });
+    }
+
     const directControlClient =
       grpcServiceDirectory.getDirectControlClient(robotId);
 
@@ -45,8 +68,6 @@ export const startDirectControlRequest = async (
           message: "Direct control session started successfully",
           data: response,
         });
-
-        console.log(response);
 
         const token = response.directControlToken;
 

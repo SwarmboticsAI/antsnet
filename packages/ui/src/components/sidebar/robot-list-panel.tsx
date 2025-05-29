@@ -21,11 +21,15 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useMapContext } from "@/providers/map-provider";
+import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { VideoPlayer } from "@/components/video-player";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useRobotSystemStore } from "@/stores/system-store";
 import { getBatteryIcon } from "@/utils/get-battery-icon";
-import { OakState, ParkingBrakeState, type Robot } from "@/types/robot";
+import { useRobotSystemStore } from "@/stores/system-store";
+import { OakState } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/oak_status";
+import { EmergencyStopState } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/emergency_stop_status";
+import { type Robot } from "@/types/robot";
 import { cn } from "@/lib/utils";
 
 export function RobotListPanel({
@@ -36,6 +40,7 @@ export function RobotListPanel({
   onRobotClick: (robotId: string) => void;
 }) {
   const { systemTables } = useRobotSystemStore();
+  const { selectedRobotIds, toggleRobotSelection } = useRobotSelection();
   const { flyToRobot } = useMapContext();
   const navigate = useNavigate();
 
@@ -48,7 +53,12 @@ export function RobotListPanel({
 
             return (
               <Collapsible
-                className="border rounded-xs p-3 mt-2"
+                className={cn(
+                  "border rounded-sm p-3 mt-2",
+                  selectedRobotIds.includes(robot.robotId)
+                    ? "border-yellow-600"
+                    : ""
+                )}
                 key={robot.robotId}
               >
                 <CollapsibleTrigger asChild>
@@ -57,21 +67,34 @@ export function RobotListPanel({
                     className="flex flex-row justify-between gap-2 hover:bg-accent/10 cursor-pointer transition-colors w-full"
                   >
                     <div className="flex items-center justify-between gap-4">
+                      <Checkbox
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRobotSelection(robot.robotId);
+                        }}
+                        checked={selectedRobotIds.includes(robot.robotId)}
+                      />
                       <h3 className="font-bold flex items-center">
                         {robot.robotId?.toUpperCase()}{" "}
                       </h3>
                       <div className="flex items-center gap-1">
-                        {getBatteryIcon(robot.battery ?? 0)}
+                        {getBatteryIcon(
+                          systemTables[robot.robotId]?.battery_percentage
+                            ?.batteryPercentage ?? 0
+                        )}
                         <span className="text-xs">
-                          {robot.battery?.toFixed(0)}%
+                          {systemTables[
+                            robot.robotId
+                          ]?.battery_percentage?.batteryPercentage?.toFixed(0)}
+                          %
                         </span>
                       </div>
                       <div>
                         <ParkingCircle
                           className={cn(
                             "w-4 h-4",
-                            robot.parkingBrakeState ===
-                              ParkingBrakeState.PARKING_BRAKE_STATE_ENGAGED
+                            table?.emergency_stop_status?.emergencyStopState ===
+                              EmergencyStopState.EMERGENCY_STOP_STATE_ENGAGED
                               ? "text-red-500"
                               : "text-zinc-800"
                           )}
@@ -86,6 +109,11 @@ export function RobotListPanel({
                               size="icon"
                               className="h-8 w-8"
                               variant="outline"
+                              disabled={
+                                systemTables[robot.robotId]
+                                  ?.controlling_device_id
+                                  ?.controllingDeviceId !== undefined
+                              }
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(`/teleop?robot_id=${robot.robotId}`);

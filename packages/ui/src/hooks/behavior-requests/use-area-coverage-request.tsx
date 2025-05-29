@@ -3,6 +3,7 @@ import { requestAreaCoverage } from "@/lib/behaviors/area-coverage";
 import { AreaCoverageRequest } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/area_coverage_request";
 
 export function useAreaCoverageRequest() {
+  const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
 
   const sendAreaCoverageRequest = useCallback(
@@ -12,6 +13,9 @@ export function useAreaCoverageRequest() {
         await requestAreaCoverage(params);
       } catch (error) {
         console.error("Error sending rally request:", error);
+        setError(
+          error instanceof Error ? error.message : "Unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -19,5 +23,5 @@ export function useAreaCoverageRequest() {
     []
   );
 
-  return { sendAreaCoverageRequest, loading };
+  return { sendAreaCoverageRequest, loading, error };
 }

@@ -41,7 +41,7 @@ export function useRobotPathLayer(
 
         const coords = path.poses
           .map((pose) => {
-            const pos = pose.pose?.position;
+            const pos = pose?.position;
             if (
               typeof pos?.longitude === "number" &&
               typeof pos?.latitude === "number"

@@ -24,8 +24,26 @@ export const protobufPackage = "sbai_protos";
 
 export type DataServiceService = typeof DataServiceService;
 export const DataServiceService = {
+  requestLocalizationTable: {
+    path: "/sbai_protos.DataService/RequestLocalizationTable",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: AggregatedTable) => Buffer.from(AggregatedTable.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => AggregatedTable.decode(value),
+  },
   requestNetworkTable: {
     path: "/sbai_protos.DataService/RequestNetworkTable",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: AggregatedTable) => Buffer.from(AggregatedTable.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => AggregatedTable.decode(value),
+  },
+  requestPayloadTable: {
+    path: "/sbai_protos.DataService/RequestPayloadTable",
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
@@ -54,12 +72,29 @@ export const DataServiceService = {
 } as const;
 
 export interface DataServiceServer extends UntypedServiceImplementation {
+  requestLocalizationTable: handleUnaryCall<Empty, AggregatedTable>;
   requestNetworkTable: handleUnaryCall<Empty, AggregatedTable>;
+  requestPayloadTable: handleUnaryCall<Empty, AggregatedTable>;
   requestSystemTable: handleUnaryCall<Empty, AggregatedTable>;
   requestTaskTable: handleUnaryCall<Empty, AggregatedTable>;
 }
 
 export interface DataServiceClient extends Client {
+  requestLocalizationTable(
+    request: Empty,
+    callback: (error: ServiceError | null, response: AggregatedTable) => void,
+  ): ClientUnaryCall;
+  requestLocalizationTable(
+    request: Empty,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AggregatedTable) => void,
+  ): ClientUnaryCall;
+  requestLocalizationTable(
+    request: Empty,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AggregatedTable) => void,
+  ): ClientUnaryCall;
   requestNetworkTable(
     request: Empty,
     callback: (error: ServiceError | null, response: AggregatedTable) => void,
@@ -70,6 +105,21 @@ export interface DataServiceClient extends Client {
     callback: (error: ServiceError | null, response: AggregatedTable) => void,
   ): ClientUnaryCall;
   requestNetworkTable(
+    request: Empty,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AggregatedTable) => void,
+  ): ClientUnaryCall;
+  requestPayloadTable(
+    request: Empty,
+    callback: (error: ServiceError | null, response: AggregatedTable) => void,
+  ): ClientUnaryCall;
+  requestPayloadTable(
+    request: Empty,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AggregatedTable) => void,
+  ): ClientUnaryCall;
+  requestPayloadTable(
     request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,

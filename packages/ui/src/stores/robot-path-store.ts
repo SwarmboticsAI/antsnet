@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GeoPath } from "@swarmbotics/protos/ros2_interfaces/sbai_geographic_protos/sbai_geographic_protos/geo_path";
+import type { GeoPath } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/geo_path";
 
 interface RobotPathState {
   robotPaths: Record<string, GeoPath>;

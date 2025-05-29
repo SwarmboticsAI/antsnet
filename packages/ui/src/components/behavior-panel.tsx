@@ -35,7 +35,7 @@ export function BehaviorCreatorPanel({
   const { theme } = useTheme();
   const { sortedRobots: robots } = useRobotStore();
 
-  const { sendBehaviorRequest, loading } =
+  const { sendBehaviorRequest, loading, error } =
     useCreateBehaviorRequest(selectedRobotId);
   const {
     state,
@@ -97,6 +97,9 @@ export function BehaviorCreatorPanel({
 
   return (
     <div className="absolute right-0 top-15">
+      {error && (
+        <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
+      )}
       <div className="flex">
         <Button
           className={cn(
@@ -166,7 +169,7 @@ export function BehaviorCreatorPanel({
                               className={cn(
                                 "h-8",
                                 selectedRobotIds.includes(robot.robotId)
-                                  ? "bg-blue-500!"
+                                  ? "bg-yellow-600!"
                                   : ""
                               )}
                               size="sm"

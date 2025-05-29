@@ -1,5 +1,5 @@
 import { randomUUIDv7 } from "bun";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import { GeoPoint } from "@swarmbotics/protos/sbai_geographic_protos/geo_point.ts";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
 

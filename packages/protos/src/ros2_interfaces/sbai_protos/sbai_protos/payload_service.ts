@@ -17,6 +17,7 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
+import { Empty } from "../../../google/protobuf/empty";
 import { BoolValue } from "../../../google/protobuf/wrappers";
 import { BoomButtonCommand } from "../../../sbai_protos/boom_button_command";
 import { PayloadIdentity } from "../../../sbai_protos/payload_identity";
@@ -35,6 +36,16 @@ export const PayloadServiceService = {
       Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
     responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
   },
+  unregisterPayload: {
+    path: "/sbai_protos.PayloadService/UnregisterPayload",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: boolean | undefined) =>
+      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
+    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+  },
   triggerBoom: {
     path: "/sbai_protos.PayloadService/TriggerBoom",
     requestStream: false,
@@ -49,6 +60,7 @@ export const PayloadServiceService = {
 
 export interface PayloadServiceServer extends UntypedServiceImplementation {
   registerPayload: handleUnaryCall<PayloadIdentity, boolean | undefined>;
+  unregisterPayload: handleUnaryCall<Empty, boolean | undefined>;
   triggerBoom: handleUnaryCall<BoomButtonCommand, boolean | undefined>;
 }
 
@@ -64,6 +76,21 @@ export interface PayloadServiceClient extends Client {
   ): ClientUnaryCall;
   registerPayload(
     request: PayloadIdentity,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  ): ClientUnaryCall;
+  unregisterPayload(
+    request: Empty,
+    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  ): ClientUnaryCall;
+  unregisterPayload(
+    request: Empty,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  ): ClientUnaryCall;
+  unregisterPayload(
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: boolean | undefined) => void,

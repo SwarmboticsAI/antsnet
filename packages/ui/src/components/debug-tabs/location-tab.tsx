@@ -4,8 +4,15 @@ import { TerrainMapHealthStatus } from "@swarmbotics/protos/ros2_interfaces/sbai
 import { GpsState } from "@swarmbotics/protos/localization/ublox/ublox_protos/ublox_protos/gps_status";
 import { FixState } from "@swarmbotics/protos/localization/ublox/ublox_protos/ublox_protos/fix_status";
 import { type Robot } from "@/types/robot";
+import { useRobotSystemStore } from "@/stores/system-store";
+import { useRobotLocalizationStore } from "@/stores/localization-store";
 
 export function LocationTab({ robot }: { robot: Robot }) {
+  const { getSystemTable } = useRobotSystemStore();
+  const { getLocalizationTable } = useRobotLocalizationStore();
+  const systemTable = getSystemTable(robot.robotId);
+  const localizationTable = getLocalizationTable(robot.robotId);
+
   return (
     <TabsContent value="perception">
       <Table className="text-sm mb-2">
@@ -13,37 +20,52 @@ export function LocationTab({ robot }: { robot: Robot }) {
           <TableRow>
             <TableCell className="font-medium">Latitude</TableCell>
             <TableCell>
-              {robot.gpsCoordinates?.latitude.toFixed(7) ?? "n/a"}
+              {localizationTable?.localization_data?.gpsCoordinate?.latitude.toFixed(
+                7
+              ) ?? "n/a"}
             </TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Longitude</TableCell>
             <TableCell>
-              {robot.gpsCoordinates?.longitude.toFixed(7) ?? "n/a"}
+              {localizationTable?.localization_data?.gpsCoordinate?.longitude.toFixed(
+                7
+              ) ?? "n/a"}
             </TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Altitude</TableCell>
             <TableCell>
-              {robot.gpsCoordinates?.altitude != null
-                ? `${robot.gpsCoordinates.altitude.toFixed(2)} m`
+              {localizationTable?.localization_data?.gpsCoordinate?.altitude !=
+              null
+                ? `${localizationTable?.localization_data?.gpsCoordinate.altitude.toFixed(
+                    2
+                  )} m`
                 : "n/a"}
             </TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Heading</TableCell>
-            <TableCell>{robot.heading.toFixed(2)}°</TableCell>
+            <TableCell>
+              {localizationTable?.localization_data?.magneticHeadingDeg.toFixed(
+                2
+              )}
+              °
+            </TableCell>
           </TableRow>
           <TableRow>
             <TableCell className="font-medium">Speed</TableCell>
-            <TableCell>{robot.speed.toFixed(1)} m/s</TableCell>
+            <TableCell>
+              {localizationTable?.localization_data?.bodySpeedMPerS.toFixed(1)}{" "}
+              m/s
+            </TableCell>
           </TableRow>
 
           <TableRow>
             <TableCell className="font-medium">GPS Status</TableCell>
             <TableCell>
-              {robot?.gpsStatus
-                ? GpsState[robot.gpsStatus.gpsState]
+              {systemTable?.gps_status?.gpsState != null
+                ? GpsState[systemTable?.gps_status?.gpsState ?? 0]
                 : "unknown"}
             </TableCell>
           </TableRow>
@@ -51,8 +73,8 @@ export function LocationTab({ robot }: { robot: Robot }) {
           <TableRow>
             <TableCell className="font-medium">GPS Fix</TableCell>
             <TableCell>
-              {robot.fixStatus?.fixState != null
-                ? FixState[robot.fixStatus.fixState]
+              {systemTable?.fix_status?.fixState != null
+                ? FixState[systemTable?.fix_status?.fixState ?? 0]
                 : "unknown"}
             </TableCell>
           </TableRow>
@@ -60,8 +82,8 @@ export function LocationTab({ robot }: { robot: Robot }) {
           <TableRow>
             <TableCell className="font-medium">Vertical Accuracy</TableCell>
             <TableCell>
-              {robot.fixStatus?.verticalAccuracyM != null
-                ? `${robot.fixStatus.verticalAccuracyM.toFixed(2)} m`
+              {systemTable?.fix_status?.verticalAccuracyM != null
+                ? `${systemTable?.fix_status?.verticalAccuracyM.toFixed(2)} m`
                 : "unknown"}
             </TableCell>
           </TableRow>
@@ -69,8 +91,8 @@ export function LocationTab({ robot }: { robot: Robot }) {
           <TableRow>
             <TableCell className="font-medium">Horizontal Accuracy</TableCell>
             <TableCell>
-              {robot.fixStatus?.horizontalAccuracyM != null
-                ? `${robot.fixStatus.horizontalAccuracyM.toFixed(2)} m`
+              {systemTable?.fix_status?.horizontalAccuracyM != null
+                ? `${systemTable?.fix_status?.horizontalAccuracyM.toFixed(2)} m`
                 : "unknown"}
             </TableCell>
           </TableRow>
@@ -78,9 +100,10 @@ export function LocationTab({ robot }: { robot: Robot }) {
           <TableRow>
             <TableCell className="font-medium">Terrain Map Status</TableCell>
             <TableCell>
-              {robot.terrainMapStatus != null
-                ? TerrainMapHealthStatus[robot.terrainMapStatus] ||
-                  robot.terrainMapStatus
+              {systemTable?.terrain_map_status?.healthStatus != null
+                ? TerrainMapHealthStatus[
+                    systemTable?.terrain_map_status?.healthStatus ?? 0
+                  ] || systemTable?.terrain_map_status?.healthStatus
                 : "Unknown"}
             </TableCell>
           </TableRow>

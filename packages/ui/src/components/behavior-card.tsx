@@ -1,26 +1,22 @@
-import { cn } from "@/lib/utils";
-import { BehaviorStatusUI } from "@/types/behavior";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { CheckCircle, Pause, Play, TrashIcon, XCircle } from "lucide-react";
 import { Behavior } from "@swarmbotics/protos/sbai_behavior_protos/behavior_request";
-import { Button } from "./ui/button";
+
+import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/loader";
 import type { ResolvedBehavior } from "@/hooks/use-behaviors";
 import { useBehaviorControls } from "@/hooks/use-behavior-controls";
-import { Loader } from "./loader";
-import {
-  CheckCircle,
-  Pause,
-  Play,
-  RefreshCwIcon,
-  TrashIcon,
-  XCircle,
-} from "lucide-react";
 import { useTheme } from "@/providers/theme-provider";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useRobotSystemStore } from "@/stores/system-store";
+import { BehaviorStatusUI } from "@/types/behavior";
+import { cn } from "@/lib/utils";
 
 export function BehaviorCard({ behavior }: { behavior: ResolvedBehavior }) {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const { behaviorId, robotId, status, request } = behavior;
+  const { getSystemTable } = useRobotSystemStore();
   const {
     pauseBehavior,
     resumeBehavior,
@@ -28,6 +24,8 @@ export function BehaviorCard({ behavior }: { behavior: ResolvedBehavior }) {
     restartBehavior,
     loading,
   } = useBehaviorControls();
+
+  const systemTable = getSystemTable(robotId);
 
   // Track pending state changes to extend loading until status updates
   const [pendingAction, setPendingAction] = useState<{
@@ -201,7 +199,11 @@ export function BehaviorCard({ behavior }: { behavior: ResolvedBehavior }) {
               variant="outline"
               size="sm"
               className="w-8 h-8 p-0"
-              disabled={isLoading.pause || isLoading.resume}
+              disabled={
+                isLoading.pause ||
+                isLoading.resume ||
+                systemTable?.controlling_device_id !== undefined
+              }
               onClick={handlePauseResume}
             >
               {isLoading.pause || isLoading.resume ? (
@@ -216,7 +218,7 @@ export function BehaviorCard({ behavior }: { behavior: ResolvedBehavior }) {
                 </>
               )}
             </Button>
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               className="w-8 h-8 p-0"
@@ -228,7 +230,7 @@ export function BehaviorCard({ behavior }: { behavior: ResolvedBehavior }) {
               ) : (
                 <RefreshCwIcon className="h-4 w-4" />
               )}
-            </Button>
+            </Button> */}
             <Button
               variant="destructive"
               className="w-8 h-8 p-0"

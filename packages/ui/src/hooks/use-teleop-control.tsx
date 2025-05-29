@@ -1,6 +1,6 @@
-// Simplified useTeleopControl.ts
-import { webSocketManager } from "@/lib/web-socket-manager";
 import { useState, useCallback } from "react";
+import { webSocketManager } from "@/lib/web-socket-manager";
+import { useProfile } from "@/providers/profile-provider";
 
 interface TeleopOptions {
   wsUrl: string;
@@ -14,6 +14,7 @@ const DEFAULT_OPTIONS: TeleopOptions = {
 };
 
 export function useTeleopControl(options: Partial<TeleopOptions> = {}) {
+  const { profile } = useProfile();
   const { wsUrl, apiBaseUrl } = { ...DEFAULT_OPTIONS, ...options };
 
   // State for tracking direct control status
@@ -25,11 +26,7 @@ export function useTeleopControl(options: Partial<TeleopOptions> = {}) {
   const sendMessage = useCallback(
     (message: any) => {
       const ws = webSocketManager.getConnection(wsUrl);
-
-      console.log(ws, wsUrl);
-
       if (ws && ws.readyState === WebSocket.OPEN) {
-        console.log("Sending message:", message);
         ws.send(JSON.stringify(message));
         return true;
       }
@@ -54,7 +51,7 @@ export function useTeleopControl(options: Partial<TeleopOptions> = {}) {
           },
           body: JSON.stringify({
             robotId: targetRobotId,
-            controllingDeviceId: "web",
+            controllingDeviceId: profile?.takId,
             controllingDeviceIp: "10.243.216.20",
           }),
         })
@@ -102,7 +99,7 @@ export function useTeleopControl(options: Partial<TeleopOptions> = {}) {
           },
           body: JSON.stringify({
             robotId: targetRobotId,
-            controllingDeviceId: "web",
+            controllingDeviceId: profile?.takId,
           }),
         })
           .then((response) => {
@@ -124,7 +121,6 @@ export function useTeleopControl(options: Partial<TeleopOptions> = {}) {
       } catch (err) {
         console.error("Error stopping teleop control:", err);
       } finally {
-        // Reset state regardless of API response
         setIsControlling(false);
         setRobotId(null);
       }
@@ -135,8 +131,6 @@ export function useTeleopControl(options: Partial<TeleopOptions> = {}) {
   // Send teleop command
   const sendTeleopCommand = useCallback(
     (throttle: number, steering: number) => {
-      console.log("Sending teleop command:", throttle, steering);
-
       return sendMessage({
         type: "teleop",
         robotId: robotId,

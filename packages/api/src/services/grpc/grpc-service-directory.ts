@@ -7,6 +7,7 @@ import { DataServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_prot
 import { BehaviorServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_service.ts";
 import { DirectControlServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/direct_control_service.ts";
 import { TeleopServiceClient } from "@swarmbotics/protos/payload/sbai_api_protos/sbai_api_protos/teleop_service.ts";
+import { PayloadServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/payload_service.ts";
 import { robotRegistryService } from "@/services/robots/robot-registry";
 
 export interface RobotInfo {
@@ -23,6 +24,7 @@ export interface RobotServices {
   dataStream?: DataServiceClient;
   behaviors?: BehaviorServiceClient;
   directControl?: DirectControlServiceClient;
+  payload?: PayloadServiceClient;
 }
 
 export interface RobotEntry {
@@ -155,6 +157,12 @@ export class GrpcServiceDirectory {
         return new BehaviorServiceClient(address, credentials);
       }
     );
+  }
+
+  public getPayloadClient(robotId: string): PayloadServiceClient {
+    return this.getServiceClient(robotId, "payload", (address, credentials) => {
+      return new PayloadServiceClient(address, credentials);
+    });
   }
 
   public getBoomClient(robotId: string): BoomServiceClient {

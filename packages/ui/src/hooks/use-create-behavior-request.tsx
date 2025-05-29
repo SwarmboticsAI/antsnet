@@ -12,15 +12,36 @@ export function useCreateBehaviorRequest(selectedRobotId?: string) {
   const { selectedRobotIds } = useRobotSelection();
   const { state, drawState } = useBehaviorCreator();
 
-  const { sendRallyRequest, loading: rallyLoading } = useRallyRequest();
-  const { sendDefendRequest, loading: defendLoading } = useDefendRequest();
-  const { sendSurroundRequest, loading: surroundLoading } =
-    useSurroundRequest();
-  const { sendAreaCoverageRequest, loading: areaCoverageLoading } =
-    useAreaCoverageRequest();
-  const { sendPatrolRequest, loading: patrolLoading } = usePatrolRequest();
-  const { sendMultiWaypointNavigationRequest, loading: multiWaypointLoading } =
-    useMultiWaypointNavigationRequest();
+  const {
+    sendRallyRequest,
+    loading: rallyLoading,
+    error: rallyError,
+  } = useRallyRequest();
+  const {
+    sendDefendRequest,
+    loading: defendLoading,
+    error: defendError,
+  } = useDefendRequest();
+  const {
+    sendSurroundRequest,
+    loading: surroundLoading,
+    error: surroundError,
+  } = useSurroundRequest();
+  const {
+    sendAreaCoverageRequest,
+    loading: areaCoverageLoading,
+    error: areaCoverageError,
+  } = useAreaCoverageRequest();
+  const {
+    sendPatrolRequest,
+    loading: patrolLoading,
+    error: patrolError,
+  } = usePatrolRequest();
+  const {
+    sendMultiWaypointNavigationRequest,
+    loading: multiWaypointLoading,
+    error: multiWaypointError,
+  } = useMultiWaypointNavigationRequest();
 
   const handleCreateBehavior = async () => {
     if (selectedRobotIds.length === 0) return;
@@ -118,5 +139,12 @@ export function useCreateBehaviorRequest(selectedRobotId?: string) {
       areaCoverageLoading ||
       patrolLoading ||
       multiWaypointLoading,
+    error:
+      rallyError ||
+      defendError ||
+      surroundError ||
+      areaCoverageError ||
+      patrolError ||
+      multiWaypointError,
   };
 }

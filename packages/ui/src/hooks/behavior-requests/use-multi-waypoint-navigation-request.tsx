@@ -3,6 +3,7 @@ import { MultiWaypointNavigationRequest } from "@swarmbotics/protos/ros2_interfa
 import { requestMultiWaypointNavigation } from "@/lib/behaviors/mutli-waypoint-navigation";
 
 export function useMultiWaypointNavigationRequest() {
+  const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
 
   const sendMultiWaypointNavigationRequest = useCallback(
@@ -14,6 +15,9 @@ export function useMultiWaypointNavigationRequest() {
         await requestMultiWaypointNavigation(params);
       } catch (error) {
         console.error("Error sending rally request:", error);
+        setError(
+          error instanceof Error ? error.message : "Unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -21,5 +25,5 @@ export function useMultiWaypointNavigationRequest() {
     []
   );
 
-  return { sendMultiWaypointNavigationRequest, loading };
+  return { sendMultiWaypointNavigationRequest, loading, error };
 }

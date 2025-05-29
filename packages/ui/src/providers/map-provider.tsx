@@ -16,6 +16,7 @@ import {
   TransitionInterpolator,
 } from "@deck.gl/core";
 import maplibregl from "maplibre-gl";
+import { useRobotLocalizationStore } from "@/stores/localization-store";
 
 export enum MapInteractionMode {
   VIEWING = "viewing",
@@ -71,6 +72,7 @@ export function MapProvider({
 }: MapProviderProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const deckRef = useRef<Deck<MapView> | null>(null);
+  const { getLocalizationTable } = useRobotLocalizationStore();
 
   const [viewState, setViewState] = useState<ExtendedViewState>({
     longitude: defaultCenter[0],
@@ -105,10 +107,11 @@ export function MapProvider({
 
   const flyToRobot = useCallback(
     (robot: Robot) => {
-      if (!robot?.gpsCoordinates) return;
+      const localizationTable = getLocalizationTable(robot.robotId);
+      if (!localizationTable?.localization_data?.gpsCoordinate) return;
       flyTo([
-        robot.gpsCoordinates.longitude ?? 0,
-        robot.gpsCoordinates.latitude ?? 0,
+        localizationTable?.localization_data?.gpsCoordinate.longitude ?? 0,
+        localizationTable?.localization_data?.gpsCoordinate.latitude ?? 0,
       ]);
     },
     [flyTo]

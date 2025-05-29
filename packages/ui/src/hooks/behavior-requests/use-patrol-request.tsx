@@ -3,6 +3,7 @@ import { PatrolRequest } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/s
 import { requestPatrol } from "@/lib/behaviors/patrol";
 
 export function usePatrolRequest() {
+  const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
 
   const sendPatrolRequest = useCallback(
@@ -12,6 +13,9 @@ export function usePatrolRequest() {
         await requestPatrol(params);
       } catch (error) {
         console.error("Error sending patrol request:", error);
+        setError(
+          error instanceof Error ? error.message : "Unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -19,5 +23,5 @@ export function usePatrolRequest() {
     []
   );
 
-  return { sendPatrolRequest, loading };
+  return { sendPatrolRequest, loading, error };
 }

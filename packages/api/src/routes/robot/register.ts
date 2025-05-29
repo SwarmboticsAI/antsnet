@@ -5,27 +5,35 @@ import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
 import { Empty } from "@swarmbotics/protos/google/protobuf/empty.ts";
 
 // Import network table protos
-import { StarlinkStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_network_protos/sbai_network_protos/starlink_status.ts";
-import { CellMetrics } from "@swarmbotics/protos/ros2_interfaces/sbai_network_protos/sbai_network_protos/cell_metrics.ts";
-import { FullPathMetrics } from "@swarmbotics/protos/ros2_interfaces/sbai_network_protos/sbai_network_protos/full_path_metrics.ts";
-import { SatelliteMetrics } from "@swarmbotics/protos/ros2_interfaces/sbai_network_protos/sbai_network_protos/satellite_metrics.ts";
+import { StarlinkStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/starlink_status.ts";
+import { CellMetrics } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/cell_metrics.ts";
+import { FullPathMetrics } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/full_path_metrics.ts";
+import { SatelliteMetrics } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/satellite_metrics.ts";
 import {
   ZerotierConnection,
   ZerotierBackupPath,
-} from "@swarmbotics/protos/ros2_interfaces/sbai_network_protos/sbai_network_protos/zerotier_connection.ts";
+} from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/zerotier_connection.ts";
 
 // Import system table protos
-import { OakStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_perception_protos/sbai_perception_protos/oak_status.ts";
-import { CanStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_control_protos/sbai_control_protos/can_status.ts";
-import { EcuStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_control_protos/sbai_control_protos/ecu_status.ts";
-import { EmergencyStopStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_control_protos/sbai_control_protos/emergency_stop_status.ts";
-import { BoomButtonStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_control_protos/sbai_control_protos/boom_button_status.ts";
-import { StateChangeResult } from "@swarmbotics/protos/ros2_interfaces/sbai_cortex_protos/sbai_cortex_protos/state_change_result.ts";
-import { TerrainMapStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_perception_protos/sbai_perception_protos/terrain_map_status.ts";
+import { OakStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/oak_status.ts";
+import { CanStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/can_status.ts";
+import { EcuStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/ecu_status.ts";
+import { EmergencyStopStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/emergency_stop_status.ts";
+import { BoomButtonStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/boom_button_status.ts";
+import { StateChangeResult } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/state_change_result.ts";
+import { TerrainMapStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/terrain_map_status.ts";
+import { GpsStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/gps_status.ts";
+import { FixStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/fix_status.ts";
+import { ControllingDeviceIdentity } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/controlling_device_identity.ts";
+import { BatteryPercentage } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/battery_percentage.ts";
+import { ParkingBrakeStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/parking_brake_status.ts";
 
 // Import task table protos
-import { GeoPath } from "@swarmbotics/protos/ros2_interfaces/sbai_geographic_protos/sbai_geographic_protos/geo_path.ts";
-import { BehaviorExecutionState } from "@swarmbotics/protos/ros2_interfaces/sbai_behavior_protos/sbai_behavior_protos/behavior_execution_state.ts";
+import { GeoPath } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/geo_path.ts";
+import { BehaviorExecutionState } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_execution_state.ts";
+
+// Import localization table protos
+import { LocalizationData } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/localization_data.ts";
 
 // Create the EventEmitter instance
 const emitter = new EventEmitter();
@@ -50,11 +58,20 @@ export type SystemTableData = {
   boom_button_status?: BoomButtonStatus;
   state_change_result?: StateChangeResult;
   terrain_map_status?: TerrainMapStatus;
+  gps_status?: GpsStatus;
+  fix_status?: FixStatus;
+  controlling_device_id?: ControllingDeviceIdentity;
+  battery_percentage?: BatteryPercentage;
+  parking_brake_status?: ParkingBrakeStatus;
 };
 
 export type TaskTableData = {
   geo_path?: GeoPath;
   behavior_execution_state?: BehaviorExecutionState;
+};
+
+export type LocalizationTableData = {
+  localization_data?: LocalizationData;
 };
 
 const router = Router();
@@ -66,7 +83,7 @@ router.post("/", (req: any, res: any) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  if (robotId !== "fa005") {
+  if (robotId !== "fa005" && robotId !== "fa009") {
     return res.status(400).json({ error: "Invalid robot ID" });
   }
 
@@ -142,7 +159,7 @@ router.post("/", (req: any, res: any) => {
 
       // Emit the decoded data
       emitter.emit("networkUpdate", {
-        robotId,
+        robotId: robotId,
         table: "network",
         data: decodedData,
         timestamp: Date.now(),
@@ -191,6 +208,11 @@ router.post("/", (req: any, res: any) => {
                   decodedData.emergency_stop_status =
                     EmergencyStopStatus.decode(value as Uint8Array);
                   break;
+                case "parking_brake_status":
+                  decodedData.parking_brake_status = ParkingBrakeStatus.decode(
+                    value as Uint8Array
+                  );
+                  break;
                 case "boom_button_status":
                   decodedData.boom_button_status = BoomButtonStatus.decode(
                     value as Uint8Array
@@ -203,6 +225,25 @@ router.post("/", (req: any, res: any) => {
                   break;
                 case "terrain_map_status":
                   decodedData.terrain_map_status = TerrainMapStatus.decode(
+                    value as Uint8Array
+                  );
+                  break;
+                case "gps_status":
+                  decodedData.gps_status = GpsStatus.decode(
+                    value as Uint8Array
+                  );
+                  break;
+                case "fix_status":
+                  decodedData.fix_status = FixStatus.decode(
+                    value as Uint8Array
+                  );
+                  break;
+                case "controlling_device_id":
+                  decodedData.controlling_device_id =
+                    ControllingDeviceIdentity.decode(value as Uint8Array);
+                  break;
+                case "battery_percentage":
+                  decodedData.battery_percentage = BatteryPercentage.decode(
                     value as Uint8Array
                   );
                   break;
@@ -220,7 +261,7 @@ router.post("/", (req: any, res: any) => {
 
       // Emit the decoded data
       emitter.emit("systemUpdate", {
-        robotId,
+        robotId: robotId,
         table: "system",
         data: decodedData,
         timestamp: Date.now(),
@@ -271,7 +312,7 @@ router.post("/", (req: any, res: any) => {
 
       // Emit the decoded data
       emitter.emit("taskUpdate", {
-        robotId,
+        robotId: robotId,
         table: "task",
         data: decodedData,
         timestamp: Date.now(),
@@ -279,6 +320,54 @@ router.post("/", (req: any, res: any) => {
     });
   }, 1000);
   intervals.push(taskInterval);
+
+  const localizationInterval = setInterval(() => {
+    client.requestLocalizationTable(Empty.fromPartial({}), (err, response) => {
+      if (err) {
+        console.error(`Error requesting localization table: ${err}`);
+        return;
+      }
+
+      console.log(`Localization table response received`);
+
+      // Decode the task table data
+      const decodedData: LocalizationTableData = {};
+
+      try {
+        if (response.table) {
+          // Decode each field in the table
+          for (const [key, value] of Object.entries(response.table)) {
+            if (!value || value.length === 0) continue;
+
+            try {
+              switch (key) {
+                case "localization_data":
+                  decodedData.localization_data = LocalizationData.decode(
+                    value as Uint8Array
+                  );
+                  break;
+                default:
+                  console.warn(`Unknown task table field: ${key}`);
+              }
+            } catch (decodeErr) {
+              console.error(`Failed to decode ${key}:`, decodeErr);
+            }
+          }
+        }
+      } catch (tableErr) {
+        console.error("Error processing task table:", tableErr);
+      }
+
+      // Emit the localization data
+      emitter.emit("localizationUpdate", {
+        robotId: robotId,
+        table: "localization",
+        data: decodedData,
+        timestamp: Date.now(),
+      });
+    });
+  }, 200);
+  intervals.push(localizationInterval);
 
   // Store intervals for cleanup
   if (typeof robotRegistryService.storeIntervals === "function") {

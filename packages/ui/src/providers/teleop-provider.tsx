@@ -36,7 +36,7 @@ export const TeleopProvider: React.FC<TeleopProviderProps> = ({ children }) => {
     const robot = teleopState.robotId
       ? robots.find((r) => r.robotId === teleopState.robotId)
       : null;
-    const isRobotInTeleop = robot?.mode === 3;
+    const isRobotInTeleop = false;
 
     if (teleopState.state === TeleopState.REQUESTING && isRobotInTeleop) {
       dispatch({ type: "ACTIVATE" });

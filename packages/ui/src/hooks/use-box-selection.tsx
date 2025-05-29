@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { type Robot } from "@/types/robot";
 import { useRobotSelection } from "@/providers/robot-selection-provider";
 import { useMapContext } from "@/providers/map-provider";
+import { type Robot } from "@/types/robot";
+import { useRobotLocalizationStore } from "@/stores/localization-store";
 
 export function useBoxSelection(robots: Robot[]) {
   const { deckRef } = useMapContext();
   const { selectedRobotIds, setSelectedRobotIds } = useRobotSelection();
+  const { localizationTables } = useRobotLocalizationStore();
 
   // Selection state
   const [isSelecting, setIsSelecting] = useState(false);
@@ -179,18 +181,24 @@ export function useBoxSelection(robots: Robot[]) {
           const maxLat = Math.max(topLeft[1], bottomRight[1]);
 
           // Find robots in the box
-          const robotsInBox = robots.filter((robot) => {
-            const lng = robot?.gpsCoordinates?.longitude ?? 0;
-            const lat = robot?.gpsCoordinates?.latitude ?? 0;
+          const robotsInBox = Object.entries(localizationTables).filter(
+            ([robotId, localizationTable]) => {
+              const lng =
+                localizationTable?.localization_data?.gpsCoordinate
+                  ?.longitude ?? 0;
+              const lat =
+                localizationTable?.localization_data?.gpsCoordinate?.latitude ??
+                0;
 
-            return (
-              lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat
-            );
-          });
+              return (
+                lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat
+              );
+            }
+          );
 
           // Add to selection
           if (robotsInBox.length > 0) {
-            const newIds = robotsInBox.map((r) => r.robotId);
+            const newIds = robotsInBox.map(([robotId]) => robotId);
 
             const combinedSelection = new Set([...selectedRobotIds, ...newIds]);
             setSelectedRobotIds(Array.from(combinedSelection));
