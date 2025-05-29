@@ -1,4 +1,4 @@
-import { randomUUIDv7 } from "bun";
+import { randomUUID } from "crypto";
 import type { Request, Response } from "express";
 import { GeoPoint } from "@swarmbotics/protos/sbai_geographic_protos/geo_point.ts";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
@@ -7,7 +7,7 @@ import type { BehaviorServiceClient } from "@swarmbotics/protos/ros2_interfaces/
 export const startPatrolBehavior = async (req: Request, res: Response) => {
   try {
     const { participatingRobotIds, patrolPerimeterPoints } = req.body;
-    const uuid = randomUUIDv7();
+    const uuid = randomUUID();
 
     if (!participatingRobotIds || !patrolPerimeterPoints) {
       res.status(400).json({

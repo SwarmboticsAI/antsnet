@@ -46,7 +46,7 @@ export const startDirectControlRequest = async (
     }
 
     const directControlClient =
-      grpcServiceDirectory.getDirectControlClient(robotId);
+      await grpcServiceDirectory.getDirectControlClient(robotId);
 
     directControlClient.startDirectControlSession(
       {
@@ -126,7 +126,7 @@ export const stopDirectControlRequest = async (req: Request, res: Response) => {
     }
 
     const directControlClient =
-      grpcServiceDirectory.getDirectControlClient(robotId);
+      await grpcServiceDirectory.getDirectControlClient(robotId);
 
     const session = SessionManager.findSessionsByRobot(robotId);
 

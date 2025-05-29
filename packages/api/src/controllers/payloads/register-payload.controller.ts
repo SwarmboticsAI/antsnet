@@ -1,7 +1,7 @@
 import { type Request, type Response } from "express";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
 
-export const registerPayload = (req: Request, res: Response) => {
+export const registerPayload = async (req: Request, res: Response) => {
   try {
     const { robotId, description, payloadType } = req.body;
 
@@ -13,7 +13,7 @@ export const registerPayload = (req: Request, res: Response) => {
       return;
     }
 
-    const payloadClient = grpcServiceDirectory.getPayloadClient(robotId);
+    const payloadClient = await grpcServiceDirectory.getPayloadClient(robotId);
 
     payloadClient.registerPayload(
       {

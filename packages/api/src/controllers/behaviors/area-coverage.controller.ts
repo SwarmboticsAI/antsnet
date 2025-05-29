@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { randomUUIDv7 } from "bun";
+import { randomUUID } from "crypto";
 import { GeoPoint } from "@swarmbotics/protos/sbai_geographic_protos/geo_point.ts";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
 import type { BehaviorServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_service.ts";
@@ -10,7 +10,7 @@ export const startAreaCoverageBehavior = async (
 ) => {
   try {
     const { participatingRobotIds, coverageArea, laneWidthM } = req.body;
-    const uuid = randomUUIDv7();
+    const uuid = randomUUID();
 
     if (!participatingRobotIds || !laneWidthM || !coverageArea) {
       res.status(400).json({

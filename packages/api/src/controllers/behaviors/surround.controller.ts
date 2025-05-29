@@ -1,13 +1,13 @@
 import type { Request, Response, NextFunction } from "express";
 import { GeoPoint } from "@swarmbotics/protos/sbai_geographic_protos/geo_point.ts";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
-import { randomUUIDv7 } from "bun";
+import { randomUUID } from "crypto";
 import type { BehaviorServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_service.ts";
 
 export const startSurroundBehavior = async (req: Request, res: Response) => {
   try {
     const { participatingRobotIds, geoPoint, surroundRadiusM } = req.body;
-    const uuid = randomUUIDv7();
+    const uuid = randomUUID();
 
     if (!participatingRobotIds || !geoPoint || !surroundRadiusM) {
       res.status(400).json({
