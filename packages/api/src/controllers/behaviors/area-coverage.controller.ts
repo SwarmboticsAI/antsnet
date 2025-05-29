@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { GeoPoint } from "@swarmbotics/protos/sbai_geographic_protos/geo_point.ts";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
-import type { BehaviorServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_service.ts";
 
 export const startAreaCoverageBehavior = async (
   req: Request,
@@ -20,23 +19,6 @@ export const startAreaCoverageBehavior = async (
       return;
     }
 
-    const getBehaviorClients: () => BehaviorServiceClient[] = () =>
-      participatingRobotIds.map((id: string) =>
-        grpcServiceDirectory.getBehaviorServiceClient(id)
-      );
-
-    const behaviorClients = getBehaviorClients();
-
-    // Check if any clients are missing
-    const missingClients = behaviorClients.some((client) => !client);
-    if (missingClients) {
-      res.status(404).json({
-        success: false,
-        message: "One or more behavior clients not found",
-      });
-      return;
-    }
-
     // Create geo points array once
     const geoPointsProto = coverageArea.map(
       (point: { latitude: number; longitude: number }) =>
@@ -44,53 +26,78 @@ export const startAreaCoverageBehavior = async (
           latitude: point.latitude,
           longitude: point.longitude,
         })
-    ) as GeoPoint[];
+    );
+
+    // FIX: Use the same pattern as rally - await each client creation with error handling
+    const behaviorClients = [];
+    for (const robotId of participatingRobotIds) {
+      try {
+        const behaviorClient =
+          await grpcServiceDirectory.getBehaviorServiceClient(robotId);
+        behaviorClients.push({ robotId, client: behaviorClient });
+      } catch (error) {
+        console.error(
+          `Failed to get behavior client for robot ${robotId}:`,
+          error
+        );
+        res.status(404).json({
+          success: false,
+          message: `Behavior client not found for robot ID ${robotId}: ${
+            (error as Error).message
+          }`,
+        });
+        return;
+      }
+    }
 
     // Use Promise.all to handle all area coverage requests
-    const requestPromises = behaviorClients.map((behaviorClient) => {
+    const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        behaviorClient.requestAreaCoverage(
+        client.requestAreaCoverage(
           {
             behaviorRequestId: uuid,
             participatingRobotIds,
             coverageArea: geoPointsProto,
             laneWidthM,
           },
-          (error, response) => {
+          (error: any, response: any) => {
             if (error) {
-              reject(error);
+              reject({ robotId, error });
             } else {
-              resolve(response);
+              resolve({ robotId, response });
             }
           }
         );
       });
     });
 
-    // Wait for all requests to complete
     try {
+      // Wait for all requests to complete
       const results = await Promise.all(requestPromises);
 
-      // Now send a single response with all results
+      // Send a single response with all results
       res.json({
         success: true,
-        message: `Area coverage behavior started successfully, ${uuid}`,
-        responses: results,
+        message: `Area coverage behavior started successfully with ID ${uuid}`,
+        results: results,
       });
     } catch (error) {
       // Handle any errors from the promises
+      const { robotId, error: coverageError } = error as {
+        robotId: string;
+        error: Error;
+      };
       res.status(500).json({
         success: false,
-        message: "Error in behavior client request",
-        error: (error as Error).message,
+        message: `Error starting area coverage behavior for robot ID ${robotId}: ${coverageError.message}`,
       });
     }
   } catch (error) {
+    console.error("Error in startAreaCoverageBehavior:", error);
     res.status(500).json({
       success: false,
-      message: `Error starting area coverage behavior: ${
-        (error as Error).message
-      }`,
+      message: "Internal server error",
+      error: (error as Error).message,
     });
   }
 };

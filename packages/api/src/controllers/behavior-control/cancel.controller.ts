@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";
 import { BehaviorControl } from "@swarmbotics/protos/sbai_protos/behavior_control_command.ts";
-import type { BehaviorServiceClient } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/behavior_service.ts";
 
 export const cancelBehavior = async (
   req: Request,
@@ -19,61 +18,70 @@ export const cancelBehavior = async (
       return;
     }
 
-    const getBehaviorClients: () => BehaviorServiceClient[] = () =>
-      participatingRobotIds.map((id: string) =>
-        grpcServiceDirectory.getBehaviorServiceClient(id)
-      );
-
-    const behaviorClients = getBehaviorClients();
-
-    // Check if any clients are missing
-    const missingClients = behaviorClients.some((client) => !client);
-    if (missingClients) {
-      res.status(404).json({
-        success: false,
-        message: "One or more behavior clients not found",
-      });
-      return;
+    // FIX: Use the same pattern as rally - await each client creation with error handling
+    const behaviorClients = [];
+    for (const robotId of participatingRobotIds) {
+      try {
+        const behaviorClient =
+          await grpcServiceDirectory.getBehaviorServiceClient(robotId);
+        behaviorClients.push({ robotId, client: behaviorClient });
+      } catch (error) {
+        console.error(
+          `Failed to get behavior client for robot ${robotId}:`,
+          error
+        );
+        res.status(404).json({
+          success: false,
+          message: `Behavior client not found for robot ID ${robotId}: ${
+            (error as Error).message
+          }`,
+        });
+        return;
+      }
     }
 
     // Use Promise.all to handle all cancel requests
-    const requestPromises = behaviorClients.map((behaviorClient) => {
+    const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        behaviorClient.issueBehaviorCommand(
+        client.issueBehaviorCommand(
           {
             command: BehaviorControl.BEHAVIOR_CONTROL_CANCEL,
             behaviorRequestId,
           },
-          (error, response) => {
+          (error: any, response: any) => {
             if (error) {
-              reject(error);
+              reject({ robotId, error });
             } else {
-              resolve(response);
+              resolve({ robotId, response });
             }
           }
         );
       });
     });
 
-    // Wait for all requests to complete
     try {
+      // Wait for all requests to complete
       const results = await Promise.all(requestPromises);
 
-      // Now send a single response with all results
+      // Send a single response with all results
       res.json({
         success: true,
         message: `Behavior ${behaviorRequestId} cancelled successfully`,
-        responses: results,
+        results: results,
       });
     } catch (error) {
       // Handle any errors from the promises
+      const { robotId, error: cancelError } = error as {
+        robotId: string;
+        error: Error;
+      };
       res.status(500).json({
         success: false,
-        message: "Error in behavior client request",
-        error: (error as Error).message,
+        message: `Error cancelling behavior for robot ID ${robotId}: ${cancelError.message}`,
       });
     }
   } catch (error) {
+    console.error("Error in cancelBehavior:", error);
     next(error);
   }
 };

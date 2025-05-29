@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto"; // Fix #1: Change from Bun import
+import { randomUUID } from "crypto";
 import type { Request, Response } from "express";
 import { GeoPoint } from "@swarmbotics/protos/sbai_geographic_protos/geo_point.ts";
 import { grpcServiceDirectory } from "@/services/grpc/grpc-service-directory";

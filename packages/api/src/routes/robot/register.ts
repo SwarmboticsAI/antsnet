@@ -83,8 +83,27 @@ router.post("/", async (req: any, res: any) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
+  // CRITICAL FIX: Check if robot is already registered and has active polling
+  const allRobots = robotRegistryService.getAllRobots();
+  if (allRobots.includes(robotId)) {
+    // Check if intervals are already running for this robot
+    if (typeof robotRegistryService.getIntervals === "function") {
+      const existingIntervals = robotRegistryService.getIntervals(robotId);
+      if (Array.isArray(existingIntervals) && existingIntervals.length > 0) {
+        console.log(
+          `Robot ${robotId} already registered with ${existingIntervals.length} active intervals, skipping duplicate registration`
+        );
+        return res.status(200).json({
+          success: true,
+          message: "Robot already registered and active",
+        });
+      }
+    }
+
+    robotRegistryService.removeRobot(robotId);
+  }
+
   robotRegistryService.addRobot(robotId, vpnIpAddress);
-  console.log(`✅ Robot registered: ${robotId} (${vpnIpAddress})`);
 
   const registrationSuccess = grpcServiceDirectory.registerRobot({
     id: robotId,
@@ -116,11 +135,9 @@ router.post("/", async (req: any, res: any) => {
   const networkInterval = setInterval(() => {
     client.requestNetworkTable(Empty.fromPartial({}), (err, response) => {
       if (err) {
-        console.error(`Error requesting network table: ${err}`);
+        console.error(`Error requesting network table from ${robotId}: ${err}`);
         return;
       }
-
-      console.log(`Network table response received`);
 
       // Decode the network table data
       const decodedData: NetworkTableData = {};
@@ -190,11 +207,9 @@ router.post("/", async (req: any, res: any) => {
   const systemInterval = setInterval(() => {
     client.requestSystemTable(Empty.fromPartial({}), (err, response) => {
       if (err) {
-        console.error(`Error requesting system table: ${err}`);
+        console.error(`Error requesting system table from ${robotId}: ${err}`);
         return;
       }
-
-      console.log(`System table response received`);
 
       // Decode the system table data
       const decodedData: SystemTableData = {};
@@ -292,11 +307,9 @@ router.post("/", async (req: any, res: any) => {
   const taskInterval = setInterval(() => {
     client.requestTaskTable(Empty.fromPartial({}), (err, response) => {
       if (err) {
-        console.error(`Error requesting task table: ${err}`);
+        console.error(`Error requesting task table from ${robotId}: ${err}`);
         return;
       }
-
-      console.log(`Task table response received`);
 
       // Decode the task table data
       const decodedData: TaskTableData = {};
@@ -342,11 +355,11 @@ router.post("/", async (req: any, res: any) => {
   const localizationInterval = setInterval(() => {
     client.requestLocalizationTable(Empty.fromPartial({}), (err, response) => {
       if (err) {
-        console.error(`Error requesting localization table: ${err}`);
+        console.error(
+          `Error requesting localization table from ${robotId}: ${err}`
+        );
         return;
       }
-
-      console.log(`Localization table response received`);
 
       // Decode the task table data
       const decodedData: LocalizationTableData = {};
@@ -365,7 +378,7 @@ router.post("/", async (req: any, res: any) => {
                   );
                   break;
                 default:
-                  console.warn(`Unknown task table field: ${key}`);
+                  console.warn(`Unknown localization table field: ${key}`);
               }
             } catch (decodeErr) {
               console.error(`Failed to decode ${key}:`, decodeErr);
@@ -373,7 +386,7 @@ router.post("/", async (req: any, res: any) => {
           }
         }
       } catch (tableErr) {
-        console.error("Error processing task table:", tableErr);
+        console.error("Error processing localization table:", tableErr);
       }
 
       // Emit the localization data
@@ -391,6 +404,10 @@ router.post("/", async (req: any, res: any) => {
   if (typeof robotRegistryService.storeIntervals === "function") {
     robotRegistryService.storeIntervals(robotId, intervals);
   }
+
+  console.log(
+    `✅ Started ${intervals.length} polling intervals for robot ${robotId}`
+  );
 
   return res.status(200).json({
     success: true,
