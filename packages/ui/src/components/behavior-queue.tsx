@@ -26,15 +26,17 @@ export function BehaviorQueue() {
 
       {shouldShowQueue ? (
         <div className="mt-2">
-          <ScrollArea className="h-[calc(100vh-620px)] min-h-[200px] px-4">
+          <ScrollArea className="h-[calc(100vh-540px)] min-h-[200px] px-4">
             <div className="py-2 space-y-2">
-              {Object.entries(behaviors)?.map(([behaviorId, behavior]) => (
-                <BehaviorCard
-                  behavior={behavior[1]}
-                  key={behaviorId}
-                  behaviorId={behaviorId}
-                />
-              ))}
+              {Object.entries(behaviors)?.map(([, behavior]) => {
+                return (
+                  <BehaviorCard
+                    behavior={behavior[1]}
+                    key={behavior[0]}
+                    behaviorId={behavior[0]}
+                  />
+                );
+              })}
             </div>
           </ScrollArea>
         </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, Pause, Play, TrashIcon, XCircle } from "lucide-react";
 import { Behavior } from "@swarmbotics/protos/sbai_behavior_protos/behavior_request";
@@ -10,8 +10,8 @@ import { Loader } from "@/components/loader";
 import { useBehaviorControls } from "@/hooks/use-behavior-controls";
 import { useTheme } from "@/providers/theme-provider";
 import { useRobotSystemStore } from "@/stores/system-store";
-import { cn } from "@/lib/utils";
 import type { BehaviorRequest } from "@swarmbotics/protos/sbai_protos/behavior_request";
+import { cn } from "@/lib/utils";
 
 interface RobotBehaviorInfo {
   robotId: string;
@@ -47,9 +47,6 @@ export function BehaviorCard({
   const getOverallStatus = () => {
     const activeRobots = behavior.robots.filter((r) => r.state === "active");
     const queuedRobots = behavior.robots.filter((r) => r.state === "queued");
-    const completedRobots = behavior.robots.filter(
-      (r) => r.state === "completed"
-    );
 
     if (activeRobots.length === 0 && queuedRobots.length === 0) {
       return "completed";
@@ -78,8 +75,6 @@ export function BehaviorCard({
   };
 
   const overallStatus = getOverallStatus();
-  const activeRobots = behavior.robots.filter((r) => r.state === "active");
-  const allRobotIds = behavior.robots.map((r) => r.robotId);
 
   const getBehaviorDisplayName = () => {
     switch (behavior.behaviorRequest.requestedBehavior) {
@@ -159,45 +154,24 @@ export function BehaviorCard({
     }
   };
 
-  const handlePauseAll = async () => {
-    await pauseBehavior({
+  const handlePause = async (robotIds: string[]) => {
+    pauseBehavior({
       behaviorRequestId: behaviorId,
-      participatingRobotIds: allRobotIds,
+      participatingRobotIds: robotIds,
     });
   };
 
-  const handleResumeAll = async () => {
-    await resumeBehavior({
+  const handleResume = async (robotIds: string[]) => {
+    resumeBehavior({
       behaviorRequestId: behaviorId,
-      participatingRobotIds: allRobotIds,
+      participatingRobotIds: robotIds,
     });
   };
 
-  const handleCancelAll = async () => {
-    await cancelBehavior({
+  const handleCancel = async (robotIds: string[]) => {
+    cancelBehavior({
       behaviorRequestId: behaviorId,
-      participatingRobotIds: allRobotIds,
-    });
-  };
-
-  const handlePauseRobot = async (robotId: string) => {
-    await pauseBehavior({
-      behaviorRequestId: behaviorId,
-      participatingRobotIds: [robotId],
-    });
-  };
-
-  const handleResumeRobot = async (robotId: string) => {
-    await resumeBehavior({
-      behaviorRequestId: behaviorId,
-      participatingRobotIds: [robotId],
-    });
-  };
-
-  const handleCancelRobot = async (robotId: string) => {
-    await cancelBehavior({
-      behaviorRequestId: behaviorId,
-      participatingRobotIds: [robotId],
+      participatingRobotIds: robotIds,
     });
   };
 
@@ -207,11 +181,12 @@ export function BehaviorCard({
     overallStatus === "mixed";
 
   return (
-    <div className="w-full border rounded">
+    <div className="w-full border rounded bg-zinc-900">
       {/* Main behavior header */}
       <div
         className={cn(
-          "flex justify-between items-center p-2",
+          "flex justify-between items-center p-2 cursor-pointer",
+          isExpanded && "border-b",
           overallStatus === "needs_intervention" && "bg-red-50"
         )}
       >
@@ -228,28 +203,29 @@ export function BehaviorCard({
             )}
           />
 
-          <div>
+          <div className="flex gap-2 items-center">
             <span className="font-semibold text-sm">
               {getBehaviorDisplayName()}
             </span>
             <div className="text-xs text-gray-600">
               {behavior.robots.length} robot
-              {behavior.robots.length !== 1 ? "s" : ""} •{" "}
-              {overallStatus.replace("_", " ")}
+              {behavior.robots.length !== 1 ? "s" : ""}
             </div>
           </div>
         </div>
 
         {/* Overall behavior controls */}
         {canControlBehavior && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {(overallStatus === "running" || overallStatus === "mixed") && (
               <Button
                 variant="outline"
                 size="sm"
                 className="w-8 h-8 p-0"
                 disabled={loading.pause}
-                onClick={handlePauseAll}
+                onClick={() =>
+                  handlePause(behavior.robots.map((r) => r.robotId))
+                }
               >
                 {loading.pause ? (
                   <Loader color={theme === "dark" ? "white" : "black"} />
@@ -265,7 +241,9 @@ export function BehaviorCard({
                 size="sm"
                 className="w-8 h-8 p-0"
                 disabled={loading.resume}
-                onClick={handleResumeAll}
+                onClick={() =>
+                  handleResume(behavior.robots.map((r) => r.robotId))
+                }
               >
                 {loading.resume ? (
                   <Loader color={theme === "dark" ? "white" : "black"} />
@@ -280,7 +258,9 @@ export function BehaviorCard({
               className="w-8 h-8 p-0"
               size="sm"
               disabled={loading.cancel}
-              onClick={handleCancelAll}
+              onClick={() =>
+                handleCancel(behavior.robots.map((r) => r.robotId))
+              }
             >
               {loading.cancel ? (
                 <Loader color="white" />
@@ -317,7 +297,7 @@ export function BehaviorCard({
 
       {/* Expanded robot details */}
       {isExpanded && (
-        <div className="border-t">
+        <div className="pl-2 py-2 bg-zinc-800 space-y-2">
           {behavior.robots.map((robot) => {
             const systemTable = getSystemTable(robot.robotId);
             const canControlRobot =
@@ -334,12 +314,11 @@ export function BehaviorCard({
               >
                 <div className="flex items-center gap-2">
                   <div
-                    className={cn(
-                      "w-2 h-2 rounded-full",
-                      getRobotStatusColor(robot)
-                    )}
+                    className={cn("w-0.5 h-5", getRobotStatusColor(robot))}
                   />
-                  <span className="text-sm font-medium">{robot.robotId}</span>
+                  <span className="text-sm font-medium">
+                    {robot.robotId.toUpperCase()}
+                  </span>
                   <span className="text-xs text-gray-600">
                     {getRobotStatusText(robot)}
                   </span>
@@ -350,7 +329,7 @@ export function BehaviorCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-6 h-6 p-0"
+                      className="w-8 h-8 p-0"
                       disabled={
                         loading.pause ||
                         loading.resume ||
@@ -361,9 +340,9 @@ export function BehaviorCard({
                           robot.status ===
                           ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED
                         ) {
-                          handleResumeRobot(robot.robotId);
+                          handleResume([robot.robotId]);
                         } else {
-                          handlePauseRobot(robot.robotId);
+                          handlePause([robot.robotId]);
                         }
                       }}
                     >
@@ -377,10 +356,10 @@ export function BehaviorCard({
 
                     <Button
                       variant="destructive"
-                      className="w-6 h-6 p-0"
                       size="sm"
+                      className="w-8 h-8 p-0"
                       disabled={loading.cancel}
-                      onClick={() => handleCancelRobot(robot.robotId)}
+                      onClick={() => handleCancel([robot.robotId])}
                     >
                       <TrashIcon className="h-3 w-3" />
                     </Button>
