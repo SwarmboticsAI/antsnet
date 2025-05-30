@@ -2,12 +2,8 @@ import { Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { SessionManager } from "@/services/session-manager.service";
 import { Joy } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/joy.ts";
-import type { DirectControlCommand } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/direct_control_command.ts";
-// Import the emitter directly from the router
-import { emitter } from "@/routes/robot/register"; // Update this path
-import type { DirectControlCommandStreamRequest } from "@swarmbotics/protos/sbai_protos/direct_control.js";
-import type { Joystick } from "@swarmbotics/protos/sbai_protos/joystick.js";
-import type { DirectControlStartRequest } from "@/controllers/direct-control/direct-control.controller";
+import type { DirectControlCommandStreamRequest } from "@swarmbotics/protos/sbai_protos/direct_control.ts";
+import { emitter } from "@/routes/robot/register";
 
 interface WebSocketMessage {
   type: string;

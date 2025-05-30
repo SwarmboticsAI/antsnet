@@ -1,7 +1,6 @@
 import { WebSocket } from "ws";
 import type { ClientWritableStream } from "@grpc/grpc-js";
-import type { DirectControlJoy } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/direct_control_joy.ts";
-import type { DirectControlCommandStreamRequest } from "@swarmbotics/protos/sbai_protos/direct_control.js";
+import type { DirectControlCommandStreamRequest } from "@swarmbotics/protos/sbai_protos/direct_control.ts";
 
 export interface TeleopSession {
   token: string;
