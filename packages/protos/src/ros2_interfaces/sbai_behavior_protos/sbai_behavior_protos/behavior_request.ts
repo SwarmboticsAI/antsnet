@@ -14,14 +14,14 @@ export const protobufPackage = "sbai_behavior_protos";
 
 export enum Behavior {
   BEHAVIOR_UNSPECIFIED = 0,
-  BEHAVIOR_RALLY = 2,
   BEHAVIOR_SURROUND = 1,
+  BEHAVIOR_RALLY = 2,
   BEHAVIOR_DEFEND = 3,
-  BEHAVIOR_MULTI_WAYPOINT_NAVIGATION = 6,
-  BEHAVIOR_PATROL = 8,
-  BEHAVIOR_AREA_COVERAGE = 7,
-  BEHAVIOR_RAPTOR = 5,
   BEHAVIOR_LINE_FORMATION = 4,
+  BEHAVIOR_RAPTOR = 5,
+  BEHAVIOR_MULTI_WAYPOINT_NAVIGATION = 6,
+  BEHAVIOR_AREA_COVERAGE = 7,
+  BEHAVIOR_PATROL = 8,
   UNRECOGNIZED = -1,
 }
 
@@ -110,10 +110,7 @@ function createBaseBehaviorRequest(): BehaviorRequest {
 }
 
 export const BehaviorRequest: MessageFns<BehaviorRequest> = {
-  encode(
-    message: BehaviorRequest,
-    writer: BinaryWriter = new BinaryWriter()
-  ): BinaryWriter {
+  encode(message: BehaviorRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.requestedBehavior !== 0) {
       writer.uint32(8).int32(message.requestedBehavior);
     }
@@ -133,8 +130,7 @@ export const BehaviorRequest: MessageFns<BehaviorRequest> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): BehaviorRequest {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBehaviorRequest();
     while (reader.pos < end) {
@@ -161,9 +157,7 @@ export const BehaviorRequest: MessageFns<BehaviorRequest> = {
             break;
           }
 
-          message.participatingRobotIds.push(
-            String.decode(reader, reader.uint32())
-          );
+          message.participatingRobotIds.push(String.decode(reader, reader.uint32()));
           continue;
         }
         case 4: {
@@ -193,23 +187,15 @@ export const BehaviorRequest: MessageFns<BehaviorRequest> = {
 
   fromJSON(object: any): BehaviorRequest {
     return {
-      requestedBehavior: isSet(object.requestedBehavior)
-        ? behaviorFromJSON(object.requestedBehavior)
-        : 0,
-      behaviorRequestId: isSet(object.behaviorRequestId)
-        ? globalThis.String(object.behaviorRequestId)
-        : "",
-      participatingRobotIds: globalThis.Array.isArray(
-        object?.participatingRobotIds
-      )
+      requestedBehavior: isSet(object.requestedBehavior) ? behaviorFromJSON(object.requestedBehavior) : 0,
+      behaviorRequestId: isSet(object.behaviorRequestId) ? globalThis.String(object.behaviorRequestId) : "",
+      participatingRobotIds: globalThis.Array.isArray(object?.participatingRobotIds)
         ? object.participatingRobotIds.map((e: any) => String.fromJSON(e))
         : [],
       geoPoints: globalThis.Array.isArray(object?.geoPoints)
         ? object.geoPoints.map((e: any) => GeoPoint.fromJSON(e))
         : [],
-      behaviorParams: isSet(object.behaviorParams)
-        ? Any.fromJSON(object.behaviorParams)
-        : undefined,
+      behaviorParams: isSet(object.behaviorParams) ? Any.fromJSON(object.behaviorParams) : undefined,
     };
   },
 
@@ -222,9 +208,7 @@ export const BehaviorRequest: MessageFns<BehaviorRequest> = {
       obj.behaviorRequestId = message.behaviorRequestId;
     }
     if (message.participatingRobotIds?.length) {
-      obj.participatingRobotIds = message.participatingRobotIds.map((e) =>
-        String.toJSON(e)
-      );
+      obj.participatingRobotIds = message.participatingRobotIds.map((e) => String.toJSON(e));
     }
     if (message.geoPoints?.length) {
       obj.geoPoints = message.geoPoints.map((e) => GeoPoint.toJSON(e));
@@ -235,54 +219,33 @@ export const BehaviorRequest: MessageFns<BehaviorRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<BehaviorRequest>, I>>(
-    base?: I
-  ): BehaviorRequest {
+  create<I extends Exact<DeepPartial<BehaviorRequest>, I>>(base?: I): BehaviorRequest {
     return BehaviorRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<BehaviorRequest>, I>>(
-    object: I
-  ): BehaviorRequest {
+  fromPartial<I extends Exact<DeepPartial<BehaviorRequest>, I>>(object: I): BehaviorRequest {
     const message = createBaseBehaviorRequest();
     message.requestedBehavior = object.requestedBehavior ?? 0;
     message.behaviorRequestId = object.behaviorRequestId ?? "";
-    message.participatingRobotIds =
-      object.participatingRobotIds?.map((e) => String.fromPartial(e)) || [];
-    message.geoPoints =
-      object.geoPoints?.map((e) => GeoPoint.fromPartial(e)) || [];
-    message.behaviorParams =
-      object.behaviorParams !== undefined && object.behaviorParams !== null
-        ? Any.fromPartial(object.behaviorParams)
-        : undefined;
+    message.participatingRobotIds = object.participatingRobotIds?.map((e) => String.fromPartial(e)) || [];
+    message.geoPoints = object.geoPoints?.map((e) => GeoPoint.fromPartial(e)) || [];
+    message.behaviorParams = (object.behaviorParams !== undefined && object.behaviorParams !== null)
+      ? Any.fromPartial(object.behaviorParams)
+      : undefined;
     return message;
   },
 };
 
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-export type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends globalThis.Array<infer U>
-  ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
+export type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
-      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
-    };
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
