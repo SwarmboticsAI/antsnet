@@ -50,6 +50,9 @@ export const startDirectControlRequest = async (
 
     directControlClient.startDirectControlSession(
       {
+        header: {
+          clientName: "web-app",
+        },
         controllingDeviceId: controllingDeviceId,
         controllingDeviceIp: controllingDeviceIp,
       },
@@ -72,7 +75,7 @@ export const startDirectControlRequest = async (
         const token = response.directControlToken;
 
         // Create a client-side stream for teleop commands
-        const teleopStream = directControlClient.commandDirectControl(
+        const teleopStream = directControlClient.directControlCommandStream(
           (streamErr: any, streamResponse: any) => {
             if (streamErr) {
               console.error(`Stream error for session ${token}:`, streamErr);
@@ -134,6 +137,9 @@ export const stopDirectControlRequest = async (req: Request, res: Response) => {
 
     directControlClient.stopDirectControlSession(
       {
+        header: {
+          clientName: "web-app",
+        },
         directControlToken: session[0]?.token ?? "",
         controllingDeviceId: controllingDeviceId, // Use the controlling device ID stored in the session
       },

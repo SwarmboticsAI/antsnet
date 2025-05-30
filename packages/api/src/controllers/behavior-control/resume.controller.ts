@@ -43,9 +43,11 @@ export const resumeBehavior = async (
     // Use Promise.all to handle all resume requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.issueBehaviorCommand(
+        client.resumeBehavior(
           {
-            command: BehaviorControl.BEHAVIOR_CONTROL_RESUME,
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId,
           },
           (error: any, response: any) => {

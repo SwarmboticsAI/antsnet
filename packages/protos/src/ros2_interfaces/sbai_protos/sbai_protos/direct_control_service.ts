@@ -19,10 +19,14 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
-import { Empty } from "../../../google/protobuf/empty";
-import { DirectControlCommand } from "../../../sbai_protos/direct_control_command";
-import { DirectControlStartRequest, DirectControlStopRequest } from "../../../sbai_protos/direct_control_request";
-import { DirectControlResponse } from "../../../sbai_protos/direct_control_response";
+import {
+  DirectControlCommandStreamRequest,
+  DirectControlCommandStreamResponse,
+  StartDirectControlSessionRequest,
+  StartDirectControlSessionResponse,
+  StopDirectControlSessionRequest,
+  StopDirectControlSessionResponse,
+} from "../../../sbai_protos/direct_control";
 
 export const protobufPackage = "sbai_protos";
 
@@ -32,85 +36,93 @@ export const DirectControlServiceService = {
     path: "/sbai_protos.DirectControlService/StartDirectControlSession",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: DirectControlStartRequest) =>
-      Buffer.from(DirectControlStartRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => DirectControlStartRequest.decode(value),
-    responseSerialize: (value: DirectControlResponse) => Buffer.from(DirectControlResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => DirectControlResponse.decode(value),
+    requestSerialize: (value: StartDirectControlSessionRequest) =>
+      Buffer.from(StartDirectControlSessionRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => StartDirectControlSessionRequest.decode(value),
+    responseSerialize: (value: StartDirectControlSessionResponse) =>
+      Buffer.from(StartDirectControlSessionResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => StartDirectControlSessionResponse.decode(value),
   },
   stopDirectControlSession: {
     path: "/sbai_protos.DirectControlService/StopDirectControlSession",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: DirectControlStopRequest) => Buffer.from(DirectControlStopRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => DirectControlStopRequest.decode(value),
-    responseSerialize: (value: DirectControlResponse) => Buffer.from(DirectControlResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => DirectControlResponse.decode(value),
+    requestSerialize: (value: StopDirectControlSessionRequest) =>
+      Buffer.from(StopDirectControlSessionRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => StopDirectControlSessionRequest.decode(value),
+    responseSerialize: (value: StopDirectControlSessionResponse) =>
+      Buffer.from(StopDirectControlSessionResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => StopDirectControlSessionResponse.decode(value),
   },
-  commandDirectControl: {
-    path: "/sbai_protos.DirectControlService/CommandDirectControl",
+  directControlCommandStream: {
+    path: "/sbai_protos.DirectControlService/DirectControlCommandStream",
     requestStream: true,
     responseStream: false,
-    requestSerialize: (value: DirectControlCommand) => Buffer.from(DirectControlCommand.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => DirectControlCommand.decode(value),
-    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
+    requestSerialize: (value: DirectControlCommandStreamRequest) =>
+      Buffer.from(DirectControlCommandStreamRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => DirectControlCommandStreamRequest.decode(value),
+    responseSerialize: (value: DirectControlCommandStreamResponse) =>
+      Buffer.from(DirectControlCommandStreamResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DirectControlCommandStreamResponse.decode(value),
   },
 } as const;
 
 export interface DirectControlServiceServer extends UntypedServiceImplementation {
-  startDirectControlSession: handleUnaryCall<DirectControlStartRequest, DirectControlResponse>;
-  stopDirectControlSession: handleUnaryCall<DirectControlStopRequest, DirectControlResponse>;
-  commandDirectControl: handleClientStreamingCall<DirectControlCommand, Empty>;
+  startDirectControlSession: handleUnaryCall<StartDirectControlSessionRequest, StartDirectControlSessionResponse>;
+  stopDirectControlSession: handleUnaryCall<StopDirectControlSessionRequest, StopDirectControlSessionResponse>;
+  directControlCommandStream: handleClientStreamingCall<
+    DirectControlCommandStreamRequest,
+    DirectControlCommandStreamResponse
+  >;
 }
 
 export interface DirectControlServiceClient extends Client {
   startDirectControlSession(
-    request: DirectControlStartRequest,
-    callback: (error: ServiceError | null, response: DirectControlResponse) => void,
+    request: StartDirectControlSessionRequest,
+    callback: (error: ServiceError | null, response: StartDirectControlSessionResponse) => void,
   ): ClientUnaryCall;
   startDirectControlSession(
-    request: DirectControlStartRequest,
+    request: StartDirectControlSessionRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: DirectControlResponse) => void,
+    callback: (error: ServiceError | null, response: StartDirectControlSessionResponse) => void,
   ): ClientUnaryCall;
   startDirectControlSession(
-    request: DirectControlStartRequest,
+    request: StartDirectControlSessionRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DirectControlResponse) => void,
+    callback: (error: ServiceError | null, response: StartDirectControlSessionResponse) => void,
   ): ClientUnaryCall;
   stopDirectControlSession(
-    request: DirectControlStopRequest,
-    callback: (error: ServiceError | null, response: DirectControlResponse) => void,
+    request: StopDirectControlSessionRequest,
+    callback: (error: ServiceError | null, response: StopDirectControlSessionResponse) => void,
   ): ClientUnaryCall;
   stopDirectControlSession(
-    request: DirectControlStopRequest,
+    request: StopDirectControlSessionRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: DirectControlResponse) => void,
+    callback: (error: ServiceError | null, response: StopDirectControlSessionResponse) => void,
   ): ClientUnaryCall;
   stopDirectControlSession(
-    request: DirectControlStopRequest,
+    request: StopDirectControlSessionRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DirectControlResponse) => void,
+    callback: (error: ServiceError | null, response: StopDirectControlSessionResponse) => void,
   ): ClientUnaryCall;
-  commandDirectControl(
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientWritableStream<DirectControlCommand>;
-  commandDirectControl(
+  directControlCommandStream(
+    callback: (error: ServiceError | null, response: DirectControlCommandStreamResponse) => void,
+  ): ClientWritableStream<DirectControlCommandStreamRequest>;
+  directControlCommandStream(
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientWritableStream<DirectControlCommand>;
-  commandDirectControl(
+    callback: (error: ServiceError | null, response: DirectControlCommandStreamResponse) => void,
+  ): ClientWritableStream<DirectControlCommandStreamRequest>;
+  directControlCommandStream(
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientWritableStream<DirectControlCommand>;
-  commandDirectControl(
+    callback: (error: ServiceError | null, response: DirectControlCommandStreamResponse) => void,
+  ): ClientWritableStream<DirectControlCommandStreamRequest>;
+  directControlCommandStream(
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientWritableStream<DirectControlCommand>;
+    callback: (error: ServiceError | null, response: DirectControlCommandStreamResponse) => void,
+  ): ClientWritableStream<DirectControlCommandStreamRequest>;
 }
 
 export const DirectControlServiceClient = makeGenericClientConstructor(

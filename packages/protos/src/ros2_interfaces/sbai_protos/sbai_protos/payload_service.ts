@@ -17,10 +17,9 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
-import { Empty } from "../../../google/protobuf/empty";
-import { BoolValue } from "../../../google/protobuf/wrappers";
-import { BoomButtonCommand } from "../../../sbai_protos/boom_button_command";
-import { PayloadIdentity } from "../../../sbai_protos/payload_identity";
+import { RegisterPayloadRequest, RegisterPayloadResponse } from "../../../sbai_protos/register_payload";
+import { TriggerBoomRequest, TriggerBoomResponse } from "../../../sbai_protos/trigger_boom";
+import { UnregisterPayloadRequest, UnregisterPayloadResponse } from "../../../sbai_protos/unregister_payload";
 
 export const protobufPackage = "sbai_protos";
 
@@ -30,85 +29,83 @@ export const PayloadServiceService = {
     path: "/sbai_protos.PayloadService/RegisterPayload",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: PayloadIdentity) => Buffer.from(PayloadIdentity.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => PayloadIdentity.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: RegisterPayloadRequest) => Buffer.from(RegisterPayloadRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => RegisterPayloadRequest.decode(value),
+    responseSerialize: (value: RegisterPayloadResponse) => Buffer.from(RegisterPayloadResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => RegisterPayloadResponse.decode(value),
   },
   unregisterPayload: {
     path: "/sbai_protos.PayloadService/UnregisterPayload",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Empty.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: UnregisterPayloadRequest) => Buffer.from(UnregisterPayloadRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => UnregisterPayloadRequest.decode(value),
+    responseSerialize: (value: UnregisterPayloadResponse) =>
+      Buffer.from(UnregisterPayloadResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => UnregisterPayloadResponse.decode(value),
   },
   triggerBoom: {
     path: "/sbai_protos.PayloadService/TriggerBoom",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: BoomButtonCommand) => Buffer.from(BoomButtonCommand.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => BoomButtonCommand.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: TriggerBoomRequest) => Buffer.from(TriggerBoomRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => TriggerBoomRequest.decode(value),
+    responseSerialize: (value: TriggerBoomResponse) => Buffer.from(TriggerBoomResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TriggerBoomResponse.decode(value),
   },
 } as const;
 
 export interface PayloadServiceServer extends UntypedServiceImplementation {
-  registerPayload: handleUnaryCall<PayloadIdentity, boolean | undefined>;
-  unregisterPayload: handleUnaryCall<Empty, boolean | undefined>;
-  triggerBoom: handleUnaryCall<BoomButtonCommand, boolean | undefined>;
+  registerPayload: handleUnaryCall<RegisterPayloadRequest, RegisterPayloadResponse>;
+  unregisterPayload: handleUnaryCall<UnregisterPayloadRequest, UnregisterPayloadResponse>;
+  triggerBoom: handleUnaryCall<TriggerBoomRequest, TriggerBoomResponse>;
 }
 
 export interface PayloadServiceClient extends Client {
   registerPayload(
-    request: PayloadIdentity,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    request: RegisterPayloadRequest,
+    callback: (error: ServiceError | null, response: RegisterPayloadResponse) => void,
   ): ClientUnaryCall;
   registerPayload(
-    request: PayloadIdentity,
+    request: RegisterPayloadRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: RegisterPayloadResponse) => void,
   ): ClientUnaryCall;
   registerPayload(
-    request: PayloadIdentity,
+    request: RegisterPayloadRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: RegisterPayloadResponse) => void,
   ): ClientUnaryCall;
   unregisterPayload(
-    request: Empty,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    request: UnregisterPayloadRequest,
+    callback: (error: ServiceError | null, response: UnregisterPayloadResponse) => void,
   ): ClientUnaryCall;
   unregisterPayload(
-    request: Empty,
+    request: UnregisterPayloadRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: UnregisterPayloadResponse) => void,
   ): ClientUnaryCall;
   unregisterPayload(
-    request: Empty,
+    request: UnregisterPayloadRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: UnregisterPayloadResponse) => void,
   ): ClientUnaryCall;
   triggerBoom(
-    request: BoomButtonCommand,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    request: TriggerBoomRequest,
+    callback: (error: ServiceError | null, response: TriggerBoomResponse) => void,
   ): ClientUnaryCall;
   triggerBoom(
-    request: BoomButtonCommand,
+    request: TriggerBoomRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: TriggerBoomResponse) => void,
   ): ClientUnaryCall;
   triggerBoom(
-    request: BoomButtonCommand,
+    request: TriggerBoomRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: TriggerBoomResponse) => void,
   ): ClientUnaryCall;
 }
 

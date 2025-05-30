@@ -50,8 +50,11 @@ export const startWaypointNavigationBehavior = async (
 
     // Fix #5: Wrap in Promise for better async handling
     const navigationPromise = new Promise((resolve, reject) => {
-      behaviorClient.requestMultiWaypointNavigation(
+      behaviorClient.navigateRoute(
         {
+          header: {
+            clientName: "web-app",
+          },
           behaviorRequestId: uuid,
           participatingRobotId: participatingRobotId,
           geoPoints: geoPointsProto,

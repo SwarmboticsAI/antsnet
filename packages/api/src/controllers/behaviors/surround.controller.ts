@@ -47,8 +47,11 @@ export const startSurroundBehavior = async (req: Request, res: Response) => {
     // Use Promise.all to handle all surround requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.requestSurround(
+        client.surroundPoint(
           {
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId: uuid,
             participatingRobotIds,
             geoPoint: geoPointProto,

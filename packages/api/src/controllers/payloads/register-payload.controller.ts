@@ -17,8 +17,13 @@ export const registerPayload = async (req: Request, res: Response) => {
 
     payloadClient.registerPayload(
       {
-        description,
-        type: payloadType,
+        header: {
+          clientName: "web-app",
+        },
+        payloadIdentity: {
+          description,
+          type: payloadType,
+        },
       },
       (error: any, response: any) => {
         if (error) {

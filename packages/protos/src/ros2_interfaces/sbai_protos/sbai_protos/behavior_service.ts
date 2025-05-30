@@ -17,261 +17,328 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
-import { BoolValue } from "../../../google/protobuf/wrappers";
-import { AreaCoverageRequest } from "../../../sbai_protos/area_coverage_request";
-import { BehaviorControlCommand } from "../../../sbai_protos/behavior_control_command";
-import { DefendRequest } from "../../../sbai_protos/defend_request";
-import { LineFormationRequest } from "../../../sbai_protos/line_formation_request";
-import { MultiWaypointNavigationRequest } from "../../../sbai_protos/multi_waypoint_navigation_request";
-import { NavigateToPoseRequest } from "../../../sbai_protos/navigate_to_pose_request";
-import { PatrolRequest } from "../../../sbai_protos/patrol_request";
-import { RallyRequest } from "../../../sbai_protos/rally_request";
-import { SurroundRequest } from "../../../sbai_protos/surround_request";
+import { CancelBehaviorRequest, CancelBehaviorResponse } from "../../../sbai_protos/cancel_behavior";
+import { CoverAreaRequest, CoverAreaResponse } from "../../../sbai_protos/cover_area";
+import { DefendPointRequest, DefendPointResponse } from "../../../sbai_protos/defend_point";
+import { FormLineRequest, FormLineResponse } from "../../../sbai_protos/form_line";
+import { NavigateRouteRequest, NavigateRouteResponse } from "../../../sbai_protos/navigate_route";
+import { NavigateToRequest, NavigateToResponse } from "../../../sbai_protos/navigate_to";
+import { PatrolPerimeterRequest, PatrolPerimeterResponse } from "../../../sbai_protos/patrol_perimeter";
+import { PauseBehaviorRequest, PauseBehaviorResponse } from "../../../sbai_protos/pause_behavior";
+import { RallyToRequest, RallyToResponse } from "../../../sbai_protos/rally_to";
+import { RestartBehaviorRequest, RestartBehaviorResponse } from "../../../sbai_protos/restart_behavior";
+import { ResumeBehaviorRequest, ResumeBehaviorResponse } from "../../../sbai_protos/resume_behavior";
+import { SurroundPointRequest, SurroundPointResponse } from "../../../sbai_protos/surround_point";
 
 export const protobufPackage = "sbai_protos";
 
 export type BehaviorServiceService = typeof BehaviorServiceService;
 export const BehaviorServiceService = {
-  requestAreaCoverage: {
-    path: "/sbai_protos.BehaviorService/RequestAreaCoverage",
+  coverArea: {
+    path: "/sbai_protos.BehaviorService/CoverArea",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AreaCoverageRequest) => Buffer.from(AreaCoverageRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AreaCoverageRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: CoverAreaRequest) => Buffer.from(CoverAreaRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => CoverAreaRequest.decode(value),
+    responseSerialize: (value: CoverAreaResponse) => Buffer.from(CoverAreaResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CoverAreaResponse.decode(value),
   },
-  requestDefend: {
-    path: "/sbai_protos.BehaviorService/RequestDefend",
+  defendPoint: {
+    path: "/sbai_protos.BehaviorService/DefendPoint",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: DefendRequest) => Buffer.from(DefendRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => DefendRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: DefendPointRequest) => Buffer.from(DefendPointRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => DefendPointRequest.decode(value),
+    responseSerialize: (value: DefendPointResponse) => Buffer.from(DefendPointResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DefendPointResponse.decode(value),
   },
-  requestLineFormation: {
-    path: "/sbai_protos.BehaviorService/RequestLineFormation",
+  formLine: {
+    path: "/sbai_protos.BehaviorService/FormLine",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: LineFormationRequest) => Buffer.from(LineFormationRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => LineFormationRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: FormLineRequest) => Buffer.from(FormLineRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => FormLineRequest.decode(value),
+    responseSerialize: (value: FormLineResponse) => Buffer.from(FormLineResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => FormLineResponse.decode(value),
   },
-  requestMultiWaypointNavigation: {
-    path: "/sbai_protos.BehaviorService/RequestMultiWaypointNavigation",
+  navigateRoute: {
+    path: "/sbai_protos.BehaviorService/NavigateRoute",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: MultiWaypointNavigationRequest) =>
-      Buffer.from(MultiWaypointNavigationRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => MultiWaypointNavigationRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: NavigateRouteRequest) => Buffer.from(NavigateRouteRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => NavigateRouteRequest.decode(value),
+    responseSerialize: (value: NavigateRouteResponse) => Buffer.from(NavigateRouteResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => NavigateRouteResponse.decode(value),
   },
-  requestNavigateToPose: {
-    path: "/sbai_protos.BehaviorService/RequestNavigateToPose",
+  navigateTo: {
+    path: "/sbai_protos.BehaviorService/NavigateTo",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: NavigateToPoseRequest) => Buffer.from(NavigateToPoseRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => NavigateToPoseRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: NavigateToRequest) => Buffer.from(NavigateToRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => NavigateToRequest.decode(value),
+    responseSerialize: (value: NavigateToResponse) => Buffer.from(NavigateToResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => NavigateToResponse.decode(value),
   },
-  requestPatrol: {
-    path: "/sbai_protos.BehaviorService/RequestPatrol",
+  patrolPerimeter: {
+    path: "/sbai_protos.BehaviorService/PatrolPerimeter",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: PatrolRequest) => Buffer.from(PatrolRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => PatrolRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: PatrolPerimeterRequest) => Buffer.from(PatrolPerimeterRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => PatrolPerimeterRequest.decode(value),
+    responseSerialize: (value: PatrolPerimeterResponse) => Buffer.from(PatrolPerimeterResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => PatrolPerimeterResponse.decode(value),
   },
-  requestRally: {
-    path: "/sbai_protos.BehaviorService/RequestRally",
+  rallyTo: {
+    path: "/sbai_protos.BehaviorService/RallyTo",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: RallyRequest) => Buffer.from(RallyRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => RallyRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: RallyToRequest) => Buffer.from(RallyToRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => RallyToRequest.decode(value),
+    responseSerialize: (value: RallyToResponse) => Buffer.from(RallyToResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => RallyToResponse.decode(value),
   },
-  requestSurround: {
-    path: "/sbai_protos.BehaviorService/RequestSurround",
+  surroundPoint: {
+    path: "/sbai_protos.BehaviorService/SurroundPoint",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: SurroundRequest) => Buffer.from(SurroundRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => SurroundRequest.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: SurroundPointRequest) => Buffer.from(SurroundPointRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => SurroundPointRequest.decode(value),
+    responseSerialize: (value: SurroundPointResponse) => Buffer.from(SurroundPointResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => SurroundPointResponse.decode(value),
   },
-  issueBehaviorCommand: {
-    path: "/sbai_protos.BehaviorService/IssueBehaviorCommand",
+  cancelBehavior: {
+    path: "/sbai_protos.BehaviorService/CancelBehavior",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: BehaviorControlCommand) => Buffer.from(BehaviorControlCommand.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => BehaviorControlCommand.decode(value),
-    responseSerialize: (value: boolean | undefined) =>
-      Buffer.from(BoolValue.encode({ value: value ?? false }).finish()),
-    responseDeserialize: (value: Buffer) => BoolValue.decode(value).value,
+    requestSerialize: (value: CancelBehaviorRequest) => Buffer.from(CancelBehaviorRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => CancelBehaviorRequest.decode(value),
+    responseSerialize: (value: CancelBehaviorResponse) => Buffer.from(CancelBehaviorResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CancelBehaviorResponse.decode(value),
+  },
+  pauseBehavior: {
+    path: "/sbai_protos.BehaviorService/PauseBehavior",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: PauseBehaviorRequest) => Buffer.from(PauseBehaviorRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => PauseBehaviorRequest.decode(value),
+    responseSerialize: (value: PauseBehaviorResponse) => Buffer.from(PauseBehaviorResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => PauseBehaviorResponse.decode(value),
+  },
+  restartBehavior: {
+    path: "/sbai_protos.BehaviorService/RestartBehavior",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: RestartBehaviorRequest) => Buffer.from(RestartBehaviorRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => RestartBehaviorRequest.decode(value),
+    responseSerialize: (value: RestartBehaviorResponse) => Buffer.from(RestartBehaviorResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => RestartBehaviorResponse.decode(value),
+  },
+  resumeBehavior: {
+    path: "/sbai_protos.BehaviorService/ResumeBehavior",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: ResumeBehaviorRequest) => Buffer.from(ResumeBehaviorRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => ResumeBehaviorRequest.decode(value),
+    responseSerialize: (value: ResumeBehaviorResponse) => Buffer.from(ResumeBehaviorResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ResumeBehaviorResponse.decode(value),
   },
 } as const;
 
 export interface BehaviorServiceServer extends UntypedServiceImplementation {
-  requestAreaCoverage: handleUnaryCall<AreaCoverageRequest, boolean | undefined>;
-  requestDefend: handleUnaryCall<DefendRequest, boolean | undefined>;
-  requestLineFormation: handleUnaryCall<LineFormationRequest, boolean | undefined>;
-  requestMultiWaypointNavigation: handleUnaryCall<MultiWaypointNavigationRequest, boolean | undefined>;
-  requestNavigateToPose: handleUnaryCall<NavigateToPoseRequest, boolean | undefined>;
-  requestPatrol: handleUnaryCall<PatrolRequest, boolean | undefined>;
-  requestRally: handleUnaryCall<RallyRequest, boolean | undefined>;
-  requestSurround: handleUnaryCall<SurroundRequest, boolean | undefined>;
-  issueBehaviorCommand: handleUnaryCall<BehaviorControlCommand, boolean | undefined>;
+  coverArea: handleUnaryCall<CoverAreaRequest, CoverAreaResponse>;
+  defendPoint: handleUnaryCall<DefendPointRequest, DefendPointResponse>;
+  formLine: handleUnaryCall<FormLineRequest, FormLineResponse>;
+  navigateRoute: handleUnaryCall<NavigateRouteRequest, NavigateRouteResponse>;
+  navigateTo: handleUnaryCall<NavigateToRequest, NavigateToResponse>;
+  patrolPerimeter: handleUnaryCall<PatrolPerimeterRequest, PatrolPerimeterResponse>;
+  rallyTo: handleUnaryCall<RallyToRequest, RallyToResponse>;
+  surroundPoint: handleUnaryCall<SurroundPointRequest, SurroundPointResponse>;
+  cancelBehavior: handleUnaryCall<CancelBehaviorRequest, CancelBehaviorResponse>;
+  pauseBehavior: handleUnaryCall<PauseBehaviorRequest, PauseBehaviorResponse>;
+  restartBehavior: handleUnaryCall<RestartBehaviorRequest, RestartBehaviorResponse>;
+  resumeBehavior: handleUnaryCall<ResumeBehaviorRequest, ResumeBehaviorResponse>;
 }
 
 export interface BehaviorServiceClient extends Client {
-  requestAreaCoverage(
-    request: AreaCoverageRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  coverArea(
+    request: CoverAreaRequest,
+    callback: (error: ServiceError | null, response: CoverAreaResponse) => void,
   ): ClientUnaryCall;
-  requestAreaCoverage(
-    request: AreaCoverageRequest,
+  coverArea(
+    request: CoverAreaRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: CoverAreaResponse) => void,
   ): ClientUnaryCall;
-  requestAreaCoverage(
-    request: AreaCoverageRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestDefend(
-    request: DefendRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestDefend(
-    request: DefendRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestDefend(
-    request: DefendRequest,
+  coverArea(
+    request: CoverAreaRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: CoverAreaResponse) => void,
   ): ClientUnaryCall;
-  requestLineFormation(
-    request: LineFormationRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  defendPoint(
+    request: DefendPointRequest,
+    callback: (error: ServiceError | null, response: DefendPointResponse) => void,
   ): ClientUnaryCall;
-  requestLineFormation(
-    request: LineFormationRequest,
+  defendPoint(
+    request: DefendPointRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: DefendPointResponse) => void,
   ): ClientUnaryCall;
-  requestLineFormation(
-    request: LineFormationRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestMultiWaypointNavigation(
-    request: MultiWaypointNavigationRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestMultiWaypointNavigation(
-    request: MultiWaypointNavigationRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestMultiWaypointNavigation(
-    request: MultiWaypointNavigationRequest,
+  defendPoint(
+    request: DefendPointRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: DefendPointResponse) => void,
   ): ClientUnaryCall;
-  requestNavigateToPose(
-    request: NavigateToPoseRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  formLine(
+    request: FormLineRequest,
+    callback: (error: ServiceError | null, response: FormLineResponse) => void,
   ): ClientUnaryCall;
-  requestNavigateToPose(
-    request: NavigateToPoseRequest,
+  formLine(
+    request: FormLineRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: FormLineResponse) => void,
   ): ClientUnaryCall;
-  requestNavigateToPose(
-    request: NavigateToPoseRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestPatrol(
-    request: PatrolRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestPatrol(
-    request: PatrolRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestPatrol(
-    request: PatrolRequest,
+  formLine(
+    request: FormLineRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: FormLineResponse) => void,
   ): ClientUnaryCall;
-  requestRally(
-    request: RallyRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  navigateRoute(
+    request: NavigateRouteRequest,
+    callback: (error: ServiceError | null, response: NavigateRouteResponse) => void,
   ): ClientUnaryCall;
-  requestRally(
-    request: RallyRequest,
+  navigateRoute(
+    request: NavigateRouteRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: NavigateRouteResponse) => void,
   ): ClientUnaryCall;
-  requestRally(
-    request: RallyRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestSurround(
-    request: SurroundRequest,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestSurround(
-    request: SurroundRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
-  ): ClientUnaryCall;
-  requestSurround(
-    request: SurroundRequest,
+  navigateRoute(
+    request: NavigateRouteRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: NavigateRouteResponse) => void,
   ): ClientUnaryCall;
-  issueBehaviorCommand(
-    request: BehaviorControlCommand,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+  navigateTo(
+    request: NavigateToRequest,
+    callback: (error: ServiceError | null, response: NavigateToResponse) => void,
   ): ClientUnaryCall;
-  issueBehaviorCommand(
-    request: BehaviorControlCommand,
+  navigateTo(
+    request: NavigateToRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: NavigateToResponse) => void,
   ): ClientUnaryCall;
-  issueBehaviorCommand(
-    request: BehaviorControlCommand,
+  navigateTo(
+    request: NavigateToRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: boolean | undefined) => void,
+    callback: (error: ServiceError | null, response: NavigateToResponse) => void,
+  ): ClientUnaryCall;
+  patrolPerimeter(
+    request: PatrolPerimeterRequest,
+    callback: (error: ServiceError | null, response: PatrolPerimeterResponse) => void,
+  ): ClientUnaryCall;
+  patrolPerimeter(
+    request: PatrolPerimeterRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: PatrolPerimeterResponse) => void,
+  ): ClientUnaryCall;
+  patrolPerimeter(
+    request: PatrolPerimeterRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: PatrolPerimeterResponse) => void,
+  ): ClientUnaryCall;
+  rallyTo(
+    request: RallyToRequest,
+    callback: (error: ServiceError | null, response: RallyToResponse) => void,
+  ): ClientUnaryCall;
+  rallyTo(
+    request: RallyToRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RallyToResponse) => void,
+  ): ClientUnaryCall;
+  rallyTo(
+    request: RallyToRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RallyToResponse) => void,
+  ): ClientUnaryCall;
+  surroundPoint(
+    request: SurroundPointRequest,
+    callback: (error: ServiceError | null, response: SurroundPointResponse) => void,
+  ): ClientUnaryCall;
+  surroundPoint(
+    request: SurroundPointRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SurroundPointResponse) => void,
+  ): ClientUnaryCall;
+  surroundPoint(
+    request: SurroundPointRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SurroundPointResponse) => void,
+  ): ClientUnaryCall;
+  cancelBehavior(
+    request: CancelBehaviorRequest,
+    callback: (error: ServiceError | null, response: CancelBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  cancelBehavior(
+    request: CancelBehaviorRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CancelBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  cancelBehavior(
+    request: CancelBehaviorRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CancelBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  pauseBehavior(
+    request: PauseBehaviorRequest,
+    callback: (error: ServiceError | null, response: PauseBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  pauseBehavior(
+    request: PauseBehaviorRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: PauseBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  pauseBehavior(
+    request: PauseBehaviorRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: PauseBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  restartBehavior(
+    request: RestartBehaviorRequest,
+    callback: (error: ServiceError | null, response: RestartBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  restartBehavior(
+    request: RestartBehaviorRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RestartBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  restartBehavior(
+    request: RestartBehaviorRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RestartBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  resumeBehavior(
+    request: ResumeBehaviorRequest,
+    callback: (error: ServiceError | null, response: ResumeBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  resumeBehavior(
+    request: ResumeBehaviorRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ResumeBehaviorResponse) => void,
+  ): ClientUnaryCall;
+  resumeBehavior(
+    request: ResumeBehaviorRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ResumeBehaviorResponse) => void,
   ): ClientUnaryCall;
 }
 
