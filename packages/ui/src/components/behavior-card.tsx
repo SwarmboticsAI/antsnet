@@ -222,16 +222,11 @@ export function BehaviorCard({
                 variant="outline"
                 size="sm"
                 className="w-8 h-8 p-0"
-                disabled={loading.pause}
                 onClick={() =>
                   handlePause(behavior.robots.map((r) => r.robotId))
                 }
               >
-                {loading.pause ? (
-                  <Loader color={theme === "dark" ? "white" : "black"} />
-                ) : (
-                  <Pause className="h-4 w-4" />
-                )}
+                <Pause className="h-4 w-4" />
               </Button>
             )}
 
@@ -240,16 +235,11 @@ export function BehaviorCard({
                 variant="outline"
                 size="sm"
                 className="w-8 h-8 p-0"
-                disabled={loading.resume}
                 onClick={() =>
                   handleResume(behavior.robots.map((r) => r.robotId))
                 }
               >
-                {loading.resume ? (
-                  <Loader color={theme === "dark" ? "white" : "black"} />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
+                <Play className="h-4 w-4" />
               </Button>
             )}
 
@@ -257,16 +247,11 @@ export function BehaviorCard({
               variant="destructive"
               className="w-8 h-8 p-0"
               size="sm"
-              disabled={loading.cancel}
               onClick={() =>
                 handleCancel(behavior.robots.map((r) => r.robotId))
               }
             >
-              {loading.cancel ? (
-                <Loader color="white" />
-              ) : (
-                <TrashIcon className="h-4 w-4" />
-              )}
+              <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
         )}
@@ -346,8 +331,10 @@ export function BehaviorCard({
                         }
                       }}
                     >
-                      {robot.status ===
-                      ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED ? (
+                      {loading.pause || loading.resume ? (
+                        <Loader />
+                      ) : robot.status ===
+                        ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED ? (
                         <Play className="h-3 w-3" />
                       ) : (
                         <Pause className="h-3 w-3" />
@@ -361,7 +348,11 @@ export function BehaviorCard({
                       disabled={loading.cancel}
                       onClick={() => handleCancel([robot.robotId])}
                     >
-                      <TrashIcon className="h-3 w-3" />
+                      {loading.cancel ? (
+                        <Loader />
+                      ) : (
+                        <TrashIcon className="h-3 w-3" />
+                      )}
                     </Button>
                   </div>
                 )}
