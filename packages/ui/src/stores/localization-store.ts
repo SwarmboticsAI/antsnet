@@ -9,6 +9,7 @@ interface LocalizationTableState {
   localizationTables: Record<string, LocalizationTableData>;
   setLocalizationTable: (robotId: string, data: LocalizationTableData) => void;
   getLocalizationTable: (robotId: string) => LocalizationTableData | undefined;
+  resetLocalizationTable: (robotId: string) => void;
   resetLocalizationTables: () => void;
 }
 
@@ -25,6 +26,12 @@ export const useRobotLocalizationStore = create<LocalizationTableState>(
       })),
 
     getLocalizationTable: (robotId) => get().localizationTables[robotId],
+
+    resetLocalizationTable: (robotId) =>
+      set((state) => {
+        const { [robotId]: _, ...rest } = state.localizationTables;
+        return { localizationTables: rest };
+      }),
 
     resetLocalizationTables: () => set({ localizationTables: {} }),
   })

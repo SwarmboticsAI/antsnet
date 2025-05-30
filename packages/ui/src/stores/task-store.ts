@@ -5,6 +5,7 @@ interface TaskTablesState {
   taskTables: Record<string, BehaviorExecutionState>;
   setTaskTable: (robotId: string, data: BehaviorExecutionState) => void;
   getTaskTable: (robotId: string) => BehaviorExecutionState | undefined;
+  resetTaskTable: (robotId: string) => void;
   resetTaskTables: () => void;
 }
 
@@ -20,6 +21,12 @@ export const useRobotTaskStore = create<TaskTablesState>((set, get) => ({
     })),
 
   getTaskTable: (robotId) => get().taskTables[robotId],
+
+  resetTaskTable: (robotId) =>
+    set((state) => {
+      const { [robotId]: _, ...rest } = state.taskTables;
+      return { taskTables: rest };
+    }),
 
   resetTaskTables: () => set({ taskTables: {} }),
 }));

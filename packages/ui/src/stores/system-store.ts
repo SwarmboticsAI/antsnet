@@ -31,6 +31,7 @@ interface SystemTablesState {
   systemTables: Record<string, SystemTableData>;
   setSystemTable: (robotId: string, data: SystemTableData) => void;
   getSystemTable: (robotId: string) => SystemTableData | undefined;
+  resetSystemTable: (robotId: string) => void;
   resetSystemTables: () => void;
 }
 
@@ -46,6 +47,12 @@ export const useRobotSystemStore = create<SystemTablesState>((set, get) => ({
     })),
 
   getSystemTable: (robotId) => get().systemTables[robotId],
+
+  resetSystemTable: (robotId) =>
+    set((state) => {
+      const { [robotId]: _, ...rest } = state.systemTables;
+      return { systemTables: rest };
+    }),
 
   resetSystemTables: () => set({ systemTables: {} }),
 }));

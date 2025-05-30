@@ -31,8 +31,8 @@ export function BehaviorCreatorPanel({
 }: {
   selectedRobotId?: string;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
   const { theme } = useTheme();
+  const [collapsed, setCollapsed] = useState(false);
   const { sortedRobots: robots } = useRobotStore();
 
   const { sendBehaviorRequest, loading, error } =
@@ -98,7 +98,9 @@ export function BehaviorCreatorPanel({
   return (
     <div className="absolute right-0 top-15">
       {error && (
-        <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>
+        <div className="absolute bottom-2 left-2 right-2 bg-red-500 text-white p-2 rounded z-40 ">
+          {error}
+        </div>
       )}
       <div className="flex">
         <Button

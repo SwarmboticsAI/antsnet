@@ -21,6 +21,7 @@ interface NetworkTablesState {
   networkTables: Record<string, NetworkTableData>;
   setNetworkTable: (robotId: string, data: NetworkTableData) => void;
   getNetworkTable: (robotId: string) => NetworkTableData | undefined;
+  resetNetworkTable: (robotId: string) => void;
   resetNetworkTables: () => void;
 }
 
@@ -36,6 +37,12 @@ export const useRobotNetworkStore = create<NetworkTablesState>((set, get) => ({
     })),
 
   getNetworkTable: (robotId) => get().networkTables[robotId],
+
+  resetNetworkTable: (robotId) =>
+    set((state) => {
+      const { [robotId]: _, ...rest } = state.networkTables;
+      return { networkTables: rest };
+    }),
 
   resetNetworkTables: () => set({ networkTables: {} }),
 }));

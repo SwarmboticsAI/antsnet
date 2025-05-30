@@ -23,7 +23,25 @@ export function Navigation() {
             className="mr-1"
           />
           <Link to="/" className={cn("text-lg font-extrabold text-zinc-400")}>
-            ANTSNet
+            ANTSNet{" "}
+            <span className="text-xs font-normal">
+              by{" "}
+              <span
+                className="font-semibold"
+                style={{
+                  color: theme === "dark" ? "#ff6400" : "#fff",
+                }}
+              >
+                Swarmbotics{" "}
+                <span
+                  style={{
+                    color: theme === "dark" ? "#ffa101" : "#fff",
+                  }}
+                >
+                  AI
+                </span>
+              </span>
+            </span>
           </Link>
         </span>
         <div className="flex items-center gap-4">
