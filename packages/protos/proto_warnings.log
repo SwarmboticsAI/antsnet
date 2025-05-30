@@ -45,31 +45,34 @@
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/active_behavior_states.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/aggregated_table.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/area_coverage_parameters.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/area_coverage_request.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/battery_percentage.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/behavior_control_command.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/behavior_execution_state.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/behavior_request.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/behavior_request_queue.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/behavior_service.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/boom_button_command.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/boom_button_status.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/cancel_behavior.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/can_status.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/cell_metrics.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/completed_behaviors.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/controlling_device_identity.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/cortex_state_update.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/cover_area.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/data_service.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/defend_parameters.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/defend_request.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/direct_control_command.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/direct_control_request.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/direct_control_response.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/defend_point.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/direct_control.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/direct_control_service.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/discovery_heartbeat.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/ecu_status.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/emergency_stop_status.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/event_annotation_service.proto ---------
+<<<<<<< HEAD
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/fix_status.proto ---------
+=======
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/form_line.proto ---------
+>>>>>>> fix/update-protos-and-else
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/full_path_metrics.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/geo_path.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/geo_point.proto ---------
@@ -77,28 +80,41 @@
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/gps_status.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/joystick.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/line_formation_parameters.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/line_formation_request.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/localization_data.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/multi_waypoint_navigation_parameters.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/multi_waypoint_navigation_request.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/navigate_to_pose_request.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/navigate_route.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/navigate_to.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/oak_status.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/parking_brake_status.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/patrol_request.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/patrol_perimeter.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/pause_behavior.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/payload_identity.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/payload_service.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/quaternion.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/rally_parameters.proto ---------
---------- Compiling ros2_interfaces/sbai_protos/sbai_protos/rally_request.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/rally_to.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/raptor_parameters.proto ---------
+<<<<<<< HEAD
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/request_header.proto ---------
+=======
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/register_payload.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/request_header.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/restart_behavior.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/resume_behavior.proto ---------
+>>>>>>> fix/update-protos-and-else
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/satellite_metrics.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/starlink_status.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/state_change_result.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/surround_parameters.proto ---------
+<<<<<<< HEAD
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/surround_request.proto ---------
+=======
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/surround_point.proto ---------
+>>>>>>> fix/update-protos-and-else
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/tag_event.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/terrain_map_status.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/trigger_boom.proto ---------
+--------- Compiling ros2_interfaces/sbai_protos/sbai_protos/unregister_payload.proto ---------
 --------- Compiling ros2_interfaces/sbai_protos/sbai_protos/zerotier_connection.proto ---------
 --------- Compiling ros2_interfaces/sbai_sensor_protos/sbai_sensor_protos/joy.proto ---------
 --------- Compiling ros2_interfaces/sbai_std_protos/sbai_std_protos/header.proto ---------

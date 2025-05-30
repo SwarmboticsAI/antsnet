@@ -5,6 +5,9 @@ import { Joy } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos
 import type { DirectControlCommand } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/direct_control_command.ts";
 // Import the emitter directly from the router
 import { emitter } from "@/routes/robot/register"; // Update this path
+import type { DirectControlCommandStreamRequest } from "@swarmbotics/protos/sbai_protos/direct_control.js";
+import type { Joystick } from "@swarmbotics/protos/sbai_protos/joystick.js";
+import type { DirectControlStartRequest } from "@/controllers/direct-control/direct-control.controller";
 
 interface WebSocketMessage {
   type: string;
@@ -166,9 +169,12 @@ function processCommand(ws: WebSocket, token: string, axes: number[]) {
 
   const validAxes =
     Array.isArray(axes) && axes.length >= 2 ? axes.slice(0, 2) : [0, 0];
-  const joyCommand: DirectControlCommand = {
+  const joyCommand: DirectControlCommandStreamRequest = {
+    header: {
+      clientName: "web-app",
+    },
     directControlToken: token,
-    joy: Joy.create({ axes: validAxes }),
+    joystick: Joy.create({ axes: validAxes }),
   };
 
   try {

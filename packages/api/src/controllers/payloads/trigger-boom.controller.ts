@@ -17,7 +17,12 @@ export const triggerBoom = async (req: Request, res: Response) => {
 
     payloadClient.triggerBoom(
       {
-        shouldEngageButtonCommand,
+        header: {
+          clientName: "web-app",
+        },
+        boomButtonCommand: {
+          shouldEngageButtonCommand,
+        },
       },
       (error: any, response: any) => {
         if (error) {

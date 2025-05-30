@@ -48,18 +48,85 @@ export function gpsStateToJSON(object: GpsState): string {
   }
 }
 
+export enum FixState {
+  FIX_STATE_UNSPECIFIED = 0,
+  FIX_STATE_NONE = 1,
+  FIX_STATE_INVALID = 2,
+  FIX_STATE_DEGRADED = 3,
+  FIX_STATE_GOOD = 4,
+  UNRECOGNIZED = -1,
+}
+
+export function fixStateFromJSON(object: any): FixState {
+  switch (object) {
+    case 0:
+    case "FIX_STATE_UNSPECIFIED":
+      return FixState.FIX_STATE_UNSPECIFIED;
+    case 1:
+    case "FIX_STATE_NONE":
+      return FixState.FIX_STATE_NONE;
+    case 2:
+    case "FIX_STATE_INVALID":
+      return FixState.FIX_STATE_INVALID;
+    case 3:
+    case "FIX_STATE_DEGRADED":
+      return FixState.FIX_STATE_DEGRADED;
+    case 4:
+    case "FIX_STATE_GOOD":
+      return FixState.FIX_STATE_GOOD;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return FixState.UNRECOGNIZED;
+  }
+}
+
+export function fixStateToJSON(object: FixState): string {
+  switch (object) {
+    case FixState.FIX_STATE_UNSPECIFIED:
+      return "FIX_STATE_UNSPECIFIED";
+    case FixState.FIX_STATE_NONE:
+      return "FIX_STATE_NONE";
+    case FixState.FIX_STATE_INVALID:
+      return "FIX_STATE_INVALID";
+    case FixState.FIX_STATE_DEGRADED:
+      return "FIX_STATE_DEGRADED";
+    case FixState.FIX_STATE_GOOD:
+      return "FIX_STATE_GOOD";
+    case FixState.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface GpsStatus {
   gpsState: GpsState;
+  fixState: FixState;
+  numSatellites: number;
+  horizontalAccuracyM: number;
+  verticalAccuracyM: number;
 }
 
 function createBaseGpsStatus(): GpsStatus {
-  return { gpsState: 0 };
+  return { gpsState: 0, fixState: 0, numSatellites: 0, horizontalAccuracyM: 0, verticalAccuracyM: 0 };
 }
 
 export const GpsStatus: MessageFns<GpsStatus> = {
   encode(message: GpsStatus, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.gpsState !== 0) {
       writer.uint32(8).int32(message.gpsState);
+    }
+    if (message.fixState !== 0) {
+      writer.uint32(16).int32(message.fixState);
+    }
+    if (message.numSatellites !== 0) {
+      writer.uint32(24).uint32(message.numSatellites);
+    }
+    if (message.horizontalAccuracyM !== 0) {
+      writer.uint32(33).double(message.horizontalAccuracyM);
+    }
+    if (message.verticalAccuracyM !== 0) {
+      writer.uint32(41).double(message.verticalAccuracyM);
     }
     return writer;
   },
@@ -79,6 +146,38 @@ export const GpsStatus: MessageFns<GpsStatus> = {
           message.gpsState = reader.int32() as any;
           continue;
         }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.fixState = reader.int32() as any;
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.numSatellites = reader.uint32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 33) {
+            break;
+          }
+
+          message.horizontalAccuracyM = reader.double();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.verticalAccuracyM = reader.double();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -89,13 +188,31 @@ export const GpsStatus: MessageFns<GpsStatus> = {
   },
 
   fromJSON(object: any): GpsStatus {
-    return { gpsState: isSet(object.gpsState) ? gpsStateFromJSON(object.gpsState) : 0 };
+    return {
+      gpsState: isSet(object.gpsState) ? gpsStateFromJSON(object.gpsState) : 0,
+      fixState: isSet(object.fixState) ? fixStateFromJSON(object.fixState) : 0,
+      numSatellites: isSet(object.numSatellites) ? globalThis.Number(object.numSatellites) : 0,
+      horizontalAccuracyM: isSet(object.horizontalAccuracyM) ? globalThis.Number(object.horizontalAccuracyM) : 0,
+      verticalAccuracyM: isSet(object.verticalAccuracyM) ? globalThis.Number(object.verticalAccuracyM) : 0,
+    };
   },
 
   toJSON(message: GpsStatus): unknown {
     const obj: any = {};
     if (message.gpsState !== 0) {
       obj.gpsState = gpsStateToJSON(message.gpsState);
+    }
+    if (message.fixState !== 0) {
+      obj.fixState = fixStateToJSON(message.fixState);
+    }
+    if (message.numSatellites !== 0) {
+      obj.numSatellites = Math.round(message.numSatellites);
+    }
+    if (message.horizontalAccuracyM !== 0) {
+      obj.horizontalAccuracyM = message.horizontalAccuracyM;
+    }
+    if (message.verticalAccuracyM !== 0) {
+      obj.verticalAccuracyM = message.verticalAccuracyM;
     }
     return obj;
   },
@@ -106,6 +223,10 @@ export const GpsStatus: MessageFns<GpsStatus> = {
   fromPartial<I extends Exact<DeepPartial<GpsStatus>, I>>(object: I): GpsStatus {
     const message = createBaseGpsStatus();
     message.gpsState = object.gpsState ?? 0;
+    message.fixState = object.fixState ?? 0;
+    message.numSatellites = object.numSatellites ?? 0;
+    message.horizontalAccuracyM = object.horizontalAccuracyM ?? 0;
+    message.verticalAccuracyM = object.verticalAccuracyM ?? 0;
     return message;
   },
 };
