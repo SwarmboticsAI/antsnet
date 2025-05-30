@@ -47,8 +47,11 @@ export const startRallyBehavior = async (req: Request, res: Response) => {
     // Use Promise.all to handle all rally requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.requestRally(
+        client.rallyTo(
           {
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId: uuid,
             participatingRobotIds,
             geoPoint: geoPointProto,

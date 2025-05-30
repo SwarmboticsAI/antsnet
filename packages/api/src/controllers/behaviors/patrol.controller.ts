@@ -50,8 +50,11 @@ export const startPatrolBehavior = async (req: Request, res: Response) => {
     // Use Promise.all to handle all patrol requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.requestPatrol(
+        client.patrolPerimeter(
           {
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId: uuid,
             participatingRobotIds,
             patrolPerimeterPoints: geoPointsProto,

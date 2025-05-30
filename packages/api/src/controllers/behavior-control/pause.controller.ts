@@ -43,9 +43,11 @@ export const pauseBehavior = async (
     // Use Promise.all to handle all pause requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.issueBehaviorCommand(
+        client.pauseBehavior(
           {
-            command: BehaviorControl.BEHAVIOR_CONTROL_PAUSE,
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId,
           },
           (error: any, response: any) => {

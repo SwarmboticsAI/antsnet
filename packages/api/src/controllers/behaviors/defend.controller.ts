@@ -46,8 +46,11 @@ export const startDefendBehavior = async (req: Request, res: Response) => {
     // Use Promise.all to handle all client requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.requestDefend(
+        client.defendPoint(
           {
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId: uuid,
             participatingRobotIds,
             geoPoint: geoPointProto,

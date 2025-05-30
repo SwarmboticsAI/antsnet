@@ -1,281 +1,392 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, Pause, Play, TrashIcon, XCircle } from "lucide-react";
 import { Behavior } from "@swarmbotics/protos/sbai_behavior_protos/behavior_request";
+import { ActiveBehaviorStatus } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/active_behavior_states";
+import { BehaviorResult } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/completed_behaviors";
 
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/loader";
-import type { ResolvedBehavior } from "@/hooks/use-behaviors";
 import { useBehaviorControls } from "@/hooks/use-behavior-controls";
 import { useTheme } from "@/providers/theme-provider";
 import { useRobotSystemStore } from "@/stores/system-store";
-import { BehaviorStatusUI } from "@/types/behavior";
+import type { BehaviorRequest } from "@swarmbotics/protos/sbai_protos/behavior_request";
 import { cn } from "@/lib/utils";
 
-export function BehaviorCard({ behavior }: { behavior: ResolvedBehavior }) {
+interface RobotBehaviorInfo {
+  robotId: string;
+  state: "active" | "queued" | "completed";
+  status?: ActiveBehaviorStatus;
+  result?: BehaviorResult;
+  behaviorKey?: string;
+}
+
+interface AggregatedBehavior {
+  behaviorRequest: BehaviorRequest;
+  robots: RobotBehaviorInfo[];
+}
+
+interface AggregatedBehaviorCardProps {
+  behaviorId: string;
+  behavior: AggregatedBehavior;
+}
+
+export function BehaviorCard({
+  behaviorId,
+  behavior,
+}: AggregatedBehaviorCardProps) {
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const { behaviorId, robotId, status, request } = behavior;
   const { getSystemTable } = useRobotSystemStore();
-  const {
-    pauseBehavior,
-    resumeBehavior,
-    cancelBehavior,
-    restartBehavior,
-    loading,
-  } = useBehaviorControls();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const systemTable = getSystemTable(robotId);
+  const { pauseBehavior, resumeBehavior, cancelBehavior, loading } =
+    useBehaviorControls();
 
-  // Track pending state changes to extend loading until status updates
-  const [pendingAction, setPendingAction] = useState<{
-    type: "pause" | "resume" | "cancel" | "restart";
-    expectedStatus?: BehaviorStatusUI;
-    fromStatus: BehaviorStatusUI;
-  } | null>(null);
+  // Calculate overall behavior status
+  const getOverallStatus = () => {
+    const activeRobots = behavior.robots.filter((r) => r.state === "active");
+    const queuedRobots = behavior.robots.filter((r) => r.state === "queued");
 
-  const previousStatusRef = useRef(status);
-
-  // Clear pending action when status changes appropriately
-  useEffect(() => {
-    if (pendingAction && previousStatusRef.current !== status) {
-      const { type, expectedStatus, fromStatus } = pendingAction;
-
-      let shouldClearPending = false;
-
-      switch (type) {
-        case "pause":
-          shouldClearPending = status === BehaviorStatusUI.PAUSED;
-          break;
-        case "resume":
-          shouldClearPending = status === BehaviorStatusUI.ACTIVE;
-          break;
-        case "cancel":
-          shouldClearPending = status === BehaviorStatusUI.CANCELED;
-          break;
-        case "restart":
-          // Restart might go through multiple states, so we clear when it's active again
-          // or if it goes to a different final state
-          shouldClearPending =
-            status === BehaviorStatusUI.ACTIVE ||
-            status === BehaviorStatusUI.FAILED ||
-            status === BehaviorStatusUI.CANCELED;
-          break;
-      }
-
-      if (shouldClearPending) {
-        setPendingAction(null);
-      }
+    if (activeRobots.length === 0 && queuedRobots.length === 0) {
+      return "completed";
     }
 
-    previousStatusRef.current = status;
-  }, [status, pendingAction]);
+    if (activeRobots.length === 0 && queuedRobots.length > 0) {
+      return "queued";
+    }
 
-  // Enhanced loading states that consider both HTTP loading and pending status changes
-  const isLoading = {
-    pause: loading.pause || pendingAction?.type === "pause",
-    resume: loading.resume || pendingAction?.type === "resume",
-    cancel: loading.cancel || pendingAction?.type === "cancel",
-    restart: loading.restart || pendingAction?.type === "restart",
+    const runningCount = activeRobots.filter(
+      (r) => r.status === ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_RUNNING
+    ).length;
+    const pausedCount = activeRobots.filter(
+      (r) => r.status === ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED
+    ).length;
+    const interventionCount = activeRobots.filter(
+      (r) =>
+        r.status ===
+        ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED_NEEDS_INTERVENTION
+    ).length;
+
+    if (interventionCount > 0) return "needs_intervention";
+    if (pausedCount > 0 && runningCount > 0) return "mixed";
+    if (pausedCount > 0) return "paused";
+    return "running";
   };
 
-  const handlePauseResume = async () => {
-    const isPaused = behavior.status === BehaviorStatusUI.PAUSED;
+  const overallStatus = getOverallStatus();
 
-    // Set pending action to track the expected state change
-    setPendingAction({
-      type: isPaused ? "resume" : "pause",
-      expectedStatus: isPaused
-        ? BehaviorStatusUI.ACTIVE
-        : BehaviorStatusUI.PAUSED,
-      fromStatus: status,
+  const getBehaviorDisplayName = () => {
+    switch (behavior.behaviorRequest.requestedBehavior) {
+      case Behavior.BEHAVIOR_RALLY:
+        return "Rally";
+      case Behavior.BEHAVIOR_SURROUND:
+        return "Surround";
+      case Behavior.BEHAVIOR_DEFEND:
+        return "Defend";
+      case Behavior.BEHAVIOR_PATROL:
+        return "Patrol";
+      case Behavior.BEHAVIOR_AREA_COVERAGE:
+        return "Area Coverage";
+      case Behavior.BEHAVIOR_MULTI_WAYPOINT_NAVIGATION:
+        return "Waypoint";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "running":
+        return "bg-green-500";
+      case "paused":
+        return "bg-yellow-600";
+      case "mixed":
+        return "bg-orange-500";
+      case "needs_intervention":
+        return "bg-red-500";
+      case "queued":
+        return "bg-blue-500";
+      case "completed":
+        return "bg-gray-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getRobotStatusColor = (robot: RobotBehaviorInfo) => {
+    if (robot.state === "completed") {
+      return robot.result === BehaviorResult.BEHAVIOR_RESULT_SUCCESS
+        ? "bg-green-500"
+        : "bg-red-500";
+    }
+    if (robot.state === "queued") return "bg-blue-500";
+
+    switch (robot.status) {
+      case ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_RUNNING:
+        return "bg-green-500";
+      case ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED:
+        return "bg-yellow-600";
+      case ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED_NEEDS_INTERVENTION:
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getRobotStatusText = (robot: RobotBehaviorInfo) => {
+    if (robot.state === "completed") {
+      return robot.result === BehaviorResult.BEHAVIOR_RESULT_SUCCESS
+        ? "Completed"
+        : "Failed";
+    }
+    if (robot.state === "queued") return "Queued";
+
+    switch (robot.status) {
+      case ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_RUNNING:
+        return "Running";
+      case ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED:
+        return "Paused";
+      case ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED_NEEDS_INTERVENTION:
+        return "Needs Intervention";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const handlePause = async (robotIds: string[]) => {
+    pauseBehavior({
+      behaviorRequestId: behaviorId,
+      participatingRobotIds: robotIds,
     });
-
-    try {
-      if (isPaused) {
-        await resumeBehavior({
-          behaviorRequestId: behaviorId,
-          participatingRobotIds: [robotId],
-        });
-      } else {
-        await pauseBehavior({
-          behaviorRequestId: behaviorId,
-          participatingRobotIds: [robotId],
-        });
-      }
-    } catch (error) {
-      // If the request fails, clear the pending action
-      setPendingAction(null);
-      throw error;
-    }
   };
 
-  const handleRestart = async () => {
-    setPendingAction({
-      type: "restart",
-      fromStatus: status,
+  const handleResume = async (robotIds: string[]) => {
+    resumeBehavior({
+      behaviorRequestId: behaviorId,
+      participatingRobotIds: robotIds,
     });
-
-    try {
-      await restartBehavior({
-        behaviorRequestId: behaviorId,
-        participatingRobotIds: [robotId],
-      });
-    } catch (error) {
-      setPendingAction(null);
-      throw error;
-    }
   };
 
-  const handleCancel = async () => {
-    setPendingAction({
-      type: "cancel",
-      expectedStatus: BehaviorStatusUI.CANCELED,
-      fromStatus: status,
+  const handleCancel = async (robotIds: string[]) => {
+    cancelBehavior({
+      behaviorRequestId: behaviorId,
+      participatingRobotIds: robotIds,
     });
-
-    try {
-      await cancelBehavior({
-        behaviorRequestId: behaviorId,
-        participatingRobotIds: [robotId],
-      });
-    } catch (error) {
-      setPendingAction(null);
-      throw error;
-    }
   };
+
+  const canControlBehavior =
+    overallStatus === "running" ||
+    overallStatus === "paused" ||
+    overallStatus === "mixed";
 
   return (
-    <div key={behaviorId} className="w-full">
+    <div className="w-full border rounded bg-zinc-900">
+      {/* Main behavior header */}
       <div
         className={cn(
-          "flex justify-between items-center p-2 border rounded w-full",
-          status === BehaviorStatusUI.NEEDS_INTERVENTION && "bg-red-200"
+          "flex justify-between items-center p-2 cursor-pointer",
+          isExpanded && "border-b",
+          overallStatus === "needs_intervention" && "bg-red-50"
         )}
       >
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2 cursor-pointer flex-1"
+          onClick={() => {
+            setIsExpanded(!isExpanded);
+          }}
+        >
           <div
             className={cn(
-              "w-2 h-2 rounded-full",
-              status === BehaviorStatusUI.ACTIVE && "bg-green-500",
-              status === BehaviorStatusUI.ACCEPTED && "bg-orange-500",
-              status === BehaviorStatusUI.PAUSED && "bg-yellow-600",
-              status === BehaviorStatusUI.QUEUED && "bg-blue-500",
-              status === BehaviorStatusUI.COMPLETED && "bg-gray-500",
-              status === BehaviorStatusUI.CANCELED && "bg-red-500",
-              status === BehaviorStatusUI.FAILED && "bg-red-500",
-              status === BehaviorStatusUI.NEEDS_INTERVENTION && "bg-red-500",
-              status === BehaviorStatusUI.UNSPECIFIED && "bg-gray-500"
+              "w-2.5 h-2.5 rounded-full",
+              getStatusColor(overallStatus)
             )}
           />
-          <span className="text-sm font-bold">
-            {request?.requestedBehavior === Behavior.BEHAVIOR_RALLY
-              ? "Rally"
-              : request?.requestedBehavior === Behavior.BEHAVIOR_SURROUND
-              ? "Surround"
-              : request?.requestedBehavior === Behavior.BEHAVIOR_DEFEND
-              ? "Defend"
-              : request?.requestedBehavior === Behavior.BEHAVIOR_PATROL
-              ? "Patrol"
-              : request?.requestedBehavior === Behavior.BEHAVIOR_AREA_COVERAGE
-              ? "Area Coverage"
-              : request?.requestedBehavior ===
-                Behavior.BEHAVIOR_MULTI_WAYPOINT_NAVIGATION
-              ? "Waypoint"
-              : "Unknown"}
-          </span>
-          <span className="text-xs">
-            {status === BehaviorStatusUI.NEEDS_INTERVENTION
-              ? "Needs Intervention"
-              : status}
-          </span>
+
+          <div className="flex gap-2 items-center">
+            <span className="font-semibold text-sm">
+              {getBehaviorDisplayName()}
+            </span>
+            <div className="text-xs text-gray-600">
+              {behavior.robots.length} robot
+              {behavior.robots.length !== 1 ? "s" : ""}
+            </div>
+          </div>
         </div>
 
-        {status === BehaviorStatusUI.ACTIVE ||
-        status === BehaviorStatusUI.ACCEPTED ||
-        status === BehaviorStatusUI.PAUSED ? (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-8 h-8 p-0"
-              disabled={
-                isLoading.pause ||
-                isLoading.resume ||
-                systemTable?.controlling_device_id !== undefined
-              }
-              onClick={handlePauseResume}
-            >
-              {isLoading.pause || isLoading.resume ? (
-                <Loader color={theme === "dark" ? "white" : "black"} />
-              ) : (
-                <>
-                  {behavior.status === BehaviorStatusUI.PAUSED ? (
-                    <Play className="h-4 w-4" />
-                  ) : (
-                    <Pause className="h-4 w-4" />
-                  )}
-                </>
-              )}
-            </Button>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              className="w-8 h-8 p-0"
-              disabled={isLoading.restart}
-              onClick={handleRestart}
-            >
-              {isLoading.restart ? (
-                <Loader color={theme === "dark" ? "white" : "black"} />
-              ) : (
-                <RefreshCwIcon className="h-4 w-4" />
-              )}
-            </Button> */}
+        {/* Overall behavior controls */}
+        {canControlBehavior && (
+          <div className="flex items-center gap-1">
+            {(overallStatus === "running" || overallStatus === "mixed") && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-8 h-8 p-0"
+                onClick={() =>
+                  handlePause(behavior.robots.map((r) => r.robotId))
+                }
+              >
+                <Pause className="h-4 w-4" />
+              </Button>
+            )}
+
+            {(overallStatus === "paused" || overallStatus === "mixed") && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-8 h-8 p-0"
+                onClick={() =>
+                  handleResume(behavior.robots.map((r) => r.robotId))
+                }
+              >
+                <Play className="h-4 w-4" />
+              </Button>
+            )}
+
             <Button
               variant="destructive"
               className="w-8 h-8 p-0"
               size="sm"
-              disabled={isLoading.cancel}
-              onClick={handleCancel}
+              onClick={() =>
+                handleCancel(behavior.robots.map((r) => r.robotId))
+              }
             >
-              {isLoading.cancel ? (
-                <Loader color="white" />
-              ) : (
-                <TrashIcon className="h-4 w-4" />
-              )}
+              <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
-        ) : status === BehaviorStatusUI.QUEUED ? (
-          <p className="text-sm text-gray-500">Waiting...</p>
-        ) : status === BehaviorStatusUI.NEEDS_INTERVENTION ? (
+        )}
+
+        {overallStatus === "needs_intervention" && (
           <Button
             variant="destructive"
             size="sm"
             className="!bg-red-600"
             onClick={() => {
-              console.log(
-                `Navigate to teleop for robot ${robotId} and behavior ${behaviorId}`
+              // Navigate to first robot that needs intervention
+              const robotNeedingIntervention = behavior.robots.find(
+                (r) =>
+                  r.status ===
+                  ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED_NEEDS_INTERVENTION
               );
-              navigate(
-                `/teleop?robot_id=${robotId}&intervention=true&behavior_id=${behaviorId}`
-              );
+              if (robotNeedingIntervention) {
+                navigate(
+                  `/teleop?robot_id=${robotNeedingIntervention.robotId}&intervention=true&behavior_id=${behaviorId}`
+                );
+              }
             }}
           >
             Teleop
           </Button>
-        ) : (
-          <div className="flex items-center gap-1">
-            {status === BehaviorStatusUI.COMPLETED ? (
-              <CheckCircle className="text-green-500 h-4 w-4" />
-            ) : status === BehaviorStatusUI.CANCELED ||
-              status === BehaviorStatusUI.FAILED ? (
-              <XCircle className="text-red-500 h-4 w-4" />
-            ) : (
-              <span className="text-gray-500">Waiting...</span>
-            )}
-          </div>
         )}
       </div>
+
+      {/* Expanded robot details */}
+      {isExpanded && (
+        <div className="pl-2 py-2 bg-zinc-800 space-y-2">
+          {behavior.robots.map((robot) => {
+            const systemTable = getSystemTable(robot.robotId);
+            const canControlRobot =
+              robot.state === "active" &&
+              (robot.status ===
+                ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_RUNNING ||
+                robot.status ===
+                  ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED);
+
+            return (
+              <div
+                key={robot.robotId}
+                className="flex justify-between items-center p-2"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn("w-0.5 h-5", getRobotStatusColor(robot))}
+                  />
+                  <span className="text-sm font-medium">
+                    {robot.robotId.toUpperCase()}
+                  </span>
+                  <span className="text-xs text-gray-600">
+                    {getRobotStatusText(robot)}
+                  </span>
+                </div>
+
+                {canControlRobot && (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-8 h-8 p-0"
+                      disabled={
+                        loading.pause ||
+                        loading.resume ||
+                        systemTable?.controlling_device_id !== undefined
+                      }
+                      onClick={() => {
+                        if (
+                          robot.status ===
+                          ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED
+                        ) {
+                          handleResume([robot.robotId]);
+                        } else {
+                          handlePause([robot.robotId]);
+                        }
+                      }}
+                    >
+                      {loading.pause || loading.resume ? (
+                        <Loader />
+                      ) : robot.status ===
+                        ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED ? (
+                        <Play className="h-3 w-3" />
+                      ) : (
+                        <Pause className="h-3 w-3" />
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-8 h-8 p-0"
+                      disabled={loading.cancel}
+                      onClick={() => handleCancel([robot.robotId])}
+                    >
+                      {loading.cancel ? (
+                        <Loader />
+                      ) : (
+                        <TrashIcon className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {robot.status ===
+                  ActiveBehaviorStatus.ACTIVE_BEHAVIOR_STATUS_PAUSED_NEEDS_INTERVENTION && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="!bg-red-600 text-xs px-2 py-1 h-6"
+                    onClick={() => {
+                      navigate(
+                        `/teleop?robot_id=${robot.robotId}&intervention=true&behavior_id=${behaviorId}`
+                      );
+                    }}
+                  >
+                    Teleop
+                  </Button>
+                )}
+
+                {robot.state === "completed" && (
+                  <div className="flex items-center gap-1">
+                    {robot.result === BehaviorResult.BEHAVIOR_RESULT_SUCCESS ? (
+                      <CheckCircle className="text-green-500 h-4 w-4" />
+                    ) : (
+                      <XCircle className="text-red-500 h-4 w-4" />
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

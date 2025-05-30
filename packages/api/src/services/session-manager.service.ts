@@ -1,12 +1,12 @@
 import { WebSocket } from "ws";
 import type { ClientWritableStream } from "@grpc/grpc-js";
-import type { DirectControlJoy } from "@swarmbotics/protos/ros2_interfaces/sbai_protos/sbai_protos/direct_control_joy.ts";
+import type { DirectControlCommandStreamRequest } from "@swarmbotics/protos/sbai_protos/direct_control.ts";
 
 export interface TeleopSession {
   token: string;
   robotId: string;
   userId: string;
-  stream: ClientWritableStream<DirectControlJoy>;
+  stream: ClientWritableStream<DirectControlCommandStreamRequest>;
   startTime: Date;
   lastActivity: Date;
   wsConnections: Set<WebSocket>;
@@ -16,7 +16,7 @@ export interface TeleopSession {
 export interface SessionData {
   robotId: string;
   userId: string;
-  stream: ClientWritableStream<DirectControlJoy>;
+  stream: ClientWritableStream<DirectControlCommandStreamRequest>;
   [key: string]: any;
 }
 

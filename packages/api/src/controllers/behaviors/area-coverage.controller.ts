@@ -53,8 +53,11 @@ export const startAreaCoverageBehavior = async (
     // Use Promise.all to handle all area coverage requests
     const requestPromises = behaviorClients.map(({ robotId, client }) => {
       return new Promise((resolve, reject) => {
-        client.requestAreaCoverage(
+        client.coverArea(
           {
+            header: {
+              clientName: "web-app",
+            },
             behaviorRequestId: uuid,
             participatingRobotIds,
             coverageArea: geoPointsProto,
